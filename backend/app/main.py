@@ -1,14 +1,17 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import SessionLocal
 from app.modelos import Rol, Usuario
+from app.routers import auth
 from app.seguridad import hashear_clave
 
 settings = get_settings()
@@ -47,6 +50,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.exception_handler(RequestValidationError)
+async def error_validacion(_: Request, exc: RequestValidationError) -> JSONResponse:
+    """Errores de validación con la forma {"detail": "mensaje en español"}."""
+    error = exc.errors()[0]
+    campo = ".".join(str(p) for p in error["loc"] if p not in ("body", "query", "path"))
+    mensaje = f"Dato inválido en '{campo}'" if campo else "Datos inválidos"
+    return JSONResponse(status_code=422, content={"detail": mensaje})
+
+
 api = APIRouter(prefix="/api")
 
 
@@ -55,4 +68,5 @@ def salud() -> dict[str, str]:
     return {"estado": "ok"}
 
 
+api.include_router(auth.router)
 app.include_router(api)

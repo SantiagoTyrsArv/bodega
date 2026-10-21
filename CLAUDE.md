@@ -165,10 +165,11 @@ Variables de entorno del backend (`backend/.env`, con un `.env.example` en el re
 
 ```
 DATABASE_URL=postgresql+psycopg://bodega:bodega@localhost:5434/bodega
-JWT_SECRET=cambia-esto
+JWT_SECRET=genera-uno-con-openssl-rand-hex-32
 CORS_ORIGINS=http://localhost:5173
 ADMIN_CORREO=admin@bodega.local
 ADMIN_CLAVE=cambia-esto
+COOKIE_SEGURA=false   # true en producción (HTTPS): cookie del refresh con Secure y SameSite=None
 ```
 
 Al arrancar, si no existe ningún usuario, se crea el ADMIN con `ADMIN_CORREO` y `ADMIN_CLAVE`.
