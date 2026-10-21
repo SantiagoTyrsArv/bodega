@@ -10,6 +10,7 @@ import './index.css'
 import Ajustes from './paginas/Ajustes'
 import Inicio from './paginas/Inicio'
 import Login from './paginas/Login'
+import Movimiento from './paginas/Movimiento'
 import ProductoDetalle from './paginas/ProductoDetalle'
 import ProductoNuevo from './paginas/ProductoNuevo'
 import Productos from './paginas/Productos'
@@ -30,6 +31,7 @@ const router = createBrowserRouter([
       { path: 'productos', element: <Productos /> },
       { path: 'productos/nuevo', element: <ProductoNuevo /> },
       { path: 'productos/:id', element: <ProductoDetalle /> },
+      { path: 'movimiento/:tipo', element: <Movimiento /> },
       { path: 'ajustes', element: <Ajustes /> },
       { path: '*', element: <p className="text-slate-600">Página no encontrada.</p> },
     ],

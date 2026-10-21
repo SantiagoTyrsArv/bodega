@@ -49,8 +49,9 @@ bodega/
         ├── main.tsx
         ├── api/              # cliente fetch + hooks de TanStack Query
         ├── paginas/          # Inicio, Productos, ProductoDetalle, ProductoNuevo, Movimiento, Historial, Ajustes, Login
-        ├── componentes/      # Escaner, Layout, FormProducto, etc.
-        ├── formato.ts        # números y moneda con Intl.NumberFormat('es')
+        ├── componentes/      # Escaner, Layout, FormProducto, SelectorProducto, ListaMovimientos, etc.
+        ├── formato.ts        # números, moneda y fechas con Intl ('es')
+        ├── inventario.ts     # motivos por tipo y vista previa del stock resultante
         └── tipos.ts
 ```
 

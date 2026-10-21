@@ -4,7 +4,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-from app.modelos import Rol, Unidad
+from app.modelos import Motivo, Rol, TipoMovimiento, Unidad
 
 # Los Decimal viajan en JSON como texto ("12.50") para no perder precisión
 Precio = Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=2)]
@@ -91,3 +91,55 @@ class ProductoSalida(BaseModel):
     activo: bool
     creado_en: datetime
     actualizado_en: datetime
+
+
+class MovimientoEntrada(BaseModel):
+    producto_id: int
+    tipo: TipoMovimiento
+    motivo: Motivo
+    cantidad: Annotated[Decimal, Field(gt=0, max_digits=12, decimal_places=3)]
+    # Si no se envía: precio de compra en entradas, precio de venta en salidas
+    precio_unitario: Precio | None = None
+    comentario: Annotated[str, StringConstraints(strip_whitespace=True)] | None = None
+    # Solo ADMIN y solo en entradas: actualiza producto.precio_compra
+    actualizar_precio: bool = False
+
+
+class ProductoBreve(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    codigo: str
+    nombre: str
+    unidad: Unidad
+
+
+class UsuarioBreve(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    nombre: str
+
+
+class MovimientoSalida(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    producto: ProductoBreve
+    usuario: UsuarioBreve
+    tipo: TipoMovimiento
+    motivo: Motivo
+    cantidad: Decimal
+    precio_unitario: Decimal
+    stock_despues: Decimal
+    comentario: str | None
+    anula_a: int | None
+    anulado_por: int | None
+    fecha: datetime
+
+
+class PaginaMovimientos(BaseModel):
+    items: list[MovimientoSalida]
+    total: int
+    pagina: int
+    por_pagina: int

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
@@ -135,3 +137,12 @@ class Movimiento(Base):
     # Un movimiento solo se anula una vez: unique impide dos anulaciones del mismo original
     anula_a: Mapped[int | None] = mapped_column(ForeignKey("movimiento.id"), unique=True)
     fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    producto: Mapped[Producto] = relationship(lazy="joined")
+    usuario: Mapped[Usuario] = relationship(lazy="joined")
+    # El movimiento que anula a este, si existe
+    anulacion: Mapped[Movimiento | None] = relationship(uselist=False, lazy="selectin")
+
+    @property
+    def anulado_por(self) -> int | None:
+        return self.anulacion.id if self.anulacion else None

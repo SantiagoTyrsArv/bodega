@@ -28,3 +28,6 @@ export const UNIDADES_CORTAS: Record<Unidad, string> = {
 /** Mismo criterio que el backend: tiene mínimo definido y el stock llegó a él. */
 export const estaBajoMinimo = (p: Producto) =>
   Number(p.stock_minimo) > 0 && Number(p.stock) <= Number(p.stock_minimo)
+
+const fecha = new Intl.DateTimeFormat('es', { dateStyle: 'medium', timeStyle: 'short' })
+export const formatoFecha = (iso: string) => fecha.format(new Date(iso))

@@ -26,6 +26,7 @@ export function useProducto(id: number) {
   return useQuery({
     queryKey: ['producto', id],
     queryFn: () => peticion<Producto>(`/productos/${id}`),
+    enabled: id > 0,
   })
 }
 

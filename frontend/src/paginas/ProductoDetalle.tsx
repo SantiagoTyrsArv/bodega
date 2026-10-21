@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { useUsuarioActual } from '../api/auth'
+import { useMovimientos } from '../api/movimientos'
 import { useEditarProducto, useProducto } from '../api/productos'
 import FormProducto from '../componentes/FormProducto'
+import ListaMovimientos from '../componentes/ListaMovimientos'
 import { estaBajoMinimo, formatoCantidad, formatoDinero, UNIDADES, UNIDADES_CORTAS } from '../formato'
 
 function Dato({ titulo, children }: { titulo: string; children: React.ReactNode }) {
@@ -20,6 +22,7 @@ export default function ProductoDetalle() {
   const esAdmin = usuario?.rol === 'ADMIN'
   const { data: producto, isPending, error } = useProducto(id)
   const editar = useEditarProducto(id)
+  const historial = useMovimientos({ producto_id: id, por_pagina: 50 })
   const [editando, setEditando] = useState(false)
 
   if (isPending) return <p className="text-slate-500">Cargando…</p>
@@ -70,6 +73,17 @@ export default function ProductoDetalle() {
             </p>
           </div>
 
+          {producto.activo && (
+            <div className="grid grid-cols-2 gap-2">
+              <Link to={`/movimiento/entrada?producto=${producto.id}`} className="boton bg-emerald-700 text-white hover:bg-emerald-800">
+                + Entrada
+              </Link>
+              <Link to={`/movimiento/salida?producto=${producto.id}`} className="boton bg-amber-600 text-white hover:bg-amber-700">
+                − Salida
+              </Link>
+            </div>
+          )}
+
           <dl className="tarjeta grid grid-cols-2 gap-4">
             <Dato titulo="Precio de compra">{formatoDinero(producto.precio_compra)}</Dato>
             <Dato titulo="Precio de venta">{formatoDinero(producto.precio_venta)}</Dato>
@@ -97,6 +111,24 @@ export default function ProductoDetalle() {
             </div>
           )}
           {editar.error && <p className="text-sm text-red-700">{editar.error.message}</p>}
+
+          <div className="tarjeta">
+            <h2 className="text-lg font-semibold text-slate-800">Historial</h2>
+            {historial.isPending ? (
+              <p className="text-slate-500">Cargando…</p>
+            ) : historial.error ? (
+              <p className="text-red-700">{historial.error.message}</p>
+            ) : (
+              <>
+                <ListaMovimientos movimientos={historial.data.items} />
+                {historial.data.total > historial.data.items.length && (
+                  <p className="pt-2 text-sm text-slate-500">
+                    Mostrando los últimos {historial.data.items.length} de {historial.data.total} movimientos.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         </>
       )}
     </section>

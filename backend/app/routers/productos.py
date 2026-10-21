@@ -1,12 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.esquemas import ProductoCrear, ProductoEditar, ProductoSalida
+from app.esquemas import PaginaMovimientos, ProductoCrear, ProductoEditar, ProductoSalida
 from app.modelos import Categoria, Producto
+from app.routers.movimientos import listar_movimientos
 from app.seguridad import AdminActual, UsuarioActual
 
 router = APIRouter(prefix="/productos", tags=["productos"])
@@ -75,6 +76,18 @@ def por_codigo(codigo: str, _: UsuarioActual, db: Db) -> ProductoSalida:
 @router.get("/{producto_id}")
 def detalle(producto_id: int, _: UsuarioActual, db: Db) -> ProductoSalida:
     return ProductoSalida.model_validate(_obtener(db, producto_id))
+
+
+@router.get("/{producto_id}/movimientos")
+def historial(
+    producto_id: int,
+    _: UsuarioActual,
+    db: Db,
+    pagina: Annotated[int, Query(ge=1)] = 1,
+    por_pagina: Annotated[int, Query(ge=1, le=200)] = 50,
+) -> PaginaMovimientos:
+    _obtener(db, producto_id)
+    return listar_movimientos(db, producto_id=producto_id, pagina=pagina, por_pagina=por_pagina)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)

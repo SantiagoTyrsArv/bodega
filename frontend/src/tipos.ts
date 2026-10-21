@@ -1,5 +1,7 @@
 export type Rol = 'ADMIN' | 'USUARIO'
 export type Unidad = 'UNIDAD' | 'KG' | 'LITRO' | 'CAJA'
+export type TipoMovimiento = 'ENTRADA' | 'SALIDA'
+export type Motivo = 'COMPRA' | 'DEVOLUCION' | 'USO' | 'VENTA' | 'PERDIDA' | 'AJUSTE' | 'ANULACION'
 
 export interface Usuario {
   id: number
@@ -48,4 +50,36 @@ export interface ProductoDatos {
   precio_venta: string
   stock_minimo: string
   nota: string | null
+}
+
+export interface Movimiento {
+  id: number
+  producto: Pick<Producto, 'id' | 'codigo' | 'nombre' | 'unidad'>
+  usuario: Pick<Usuario, 'id' | 'nombre'>
+  tipo: TipoMovimiento
+  motivo: Motivo
+  cantidad: string
+  precio_unitario: string
+  stock_despues: string
+  comentario: string | null
+  anula_a: number | null
+  anulado_por: number | null
+  fecha: string
+}
+
+export interface MovimientoDatos {
+  producto_id: number
+  tipo: TipoMovimiento
+  motivo: Motivo
+  cantidad: string
+  precio_unitario?: string
+  comentario?: string | null
+  actualizar_precio?: boolean
+}
+
+export interface Pagina<T> {
+  items: T[]
+  total: number
+  pagina: number
+  por_pagina: number
 }

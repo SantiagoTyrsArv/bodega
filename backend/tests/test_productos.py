@@ -147,18 +147,20 @@ def test_buscar_por_nombre_codigo_y_categoria(cliente, admin, usuario):
     assert nombres(f"?categoria_id={cid}") == ["Jabón"]
 
 
-def test_filtro_bajo_minimo(cliente, admin, usuario, db):
-    from app.modelos import Producto
-
+def test_filtro_bajo_minimo(cliente, admin, usuario):
     crear_producto(cliente, admin, codigo="1", nombre="Sin mínimo", stock_minimo="0")
     crear_producto(cliente, admin, codigo="2", nombre="Bajo")
-    sobre = crear_producto(cliente, admin, codigo="3", nombre="Sobre")
-    # El stock solo lo cambia el servicio de inventario; aquí se fija directo para la prueba
-    db.get(Producto, sobre["id"]).stock = 11
-    db.commit()
+    justo = crear_producto(cliente, admin, codigo="3", nombre="Justo en el mínimo")
+    sobre = crear_producto(cliente, admin, codigo="4", nombre="Sobre")
+    for producto, cantidad in ((justo, "10"), (sobre, "11")):
+        movimiento = {"producto_id": producto["id"], "tipo": "ENTRADA", "motivo": "COMPRA"}
+        r = cliente.post(
+            "/api/movimientos", json={**movimiento, "cantidad": cantidad}, headers=admin
+        )
+        assert r.status_code == 201
 
     r = cliente.get("/api/productos?bajo_minimo=true", headers=usuario)
-    assert [p["nombre"] for p in r.json()] == ["Bajo"]
+    assert [p["nombre"] for p in r.json()] == ["Bajo", "Justo en el mínimo"]
 
 
 def test_resolver_codigo_escaneado(cliente, admin, usuario):
