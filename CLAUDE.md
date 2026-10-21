@@ -169,12 +169,12 @@ JWT_SECRET=genera-uno-con-openssl-rand-hex-32
 CORS_ORIGINS=http://localhost:5173
 ADMIN_CORREO=admin@bodega.local
 ADMIN_CLAVE=cambia-esto
-COOKIE_SEGURA=false   # true en producción (HTTPS): cookie del refresh con Secure y SameSite=None
+COOKIE_SEGURA=false   # true en producción (HTTPS): la cookie del refresh lleva Secure
 ```
 
 Al arrancar, si no existe ningún usuario, se crea el ADMIN con `ADMIN_CORREO` y `ADMIN_CLAVE`.
 
-Frontend (`frontend/.env`): `VITE_API_URL=http://localhost:8000/api`
+Frontend (`frontend/.env`): `VITE_API_URL=/api`. El frontend siempre llama a la API en su mismo dominio: en local, el proxy de `vite.config.ts` envía `/api` a `localhost:8000`; en producción, el rewrite de `frontend/vercel.json` lo envía a Render. Así la cookie del refresh es propia del dominio (no de terceros) y no hace falta CORS.
 
 Nunca subas archivos `.env` ni secretos al repositorio.
 
@@ -223,7 +223,7 @@ En `backend/tests/`, contra una base PostgreSQL de prueba:
 7. Resumen e Inicio con alertas de stock bajo y valor del inventario.
 8. Historial y exportación a Excel.
 9. PWA instalable, ajustes de usuarios.
-10. Despliegue: Neon, Render (`uv run alembic upgrade head` antes de arrancar), Vercel.
+10. Despliegue: Neon, Render (`uv run alembic upgrade head` antes de arrancar), Vercel (ajustar la URL de Render en `frontend/vercel.json`).
 
 ## Fuera de alcance (no implementar sin que se pida)
 

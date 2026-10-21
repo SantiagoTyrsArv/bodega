@@ -32,8 +32,8 @@ def _poner_cookie(respuesta: Response, usuario_id: int) -> None:
         path=RUTA_COOKIE,
         httponly=True,
         secure=settings.cookie_segura,
-        # Con HTTPS y dominios distintos (Vercel + Render) se necesita "none"
-        samesite="none" if settings.cookie_segura else "lax",
+        # El frontend y la API comparten dominio (proxy de Vite / rewrite de Vercel)
+        samesite="lax",
     )
 
 
@@ -77,13 +77,12 @@ def refresh(
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(respuesta: Response) -> None:
     # No exige access token: así se puede cerrar sesión aunque haya expirado
-    settings = get_settings()
     respuesta.delete_cookie(
         COOKIE_REFRESH,
         path=RUTA_COOKIE,
         httponly=True,
-        secure=settings.cookie_segura,
-        samesite="none" if settings.cookie_segura else "lax",
+        secure=get_settings().cookie_segura,
+        samesite="lax",
     )
 
 

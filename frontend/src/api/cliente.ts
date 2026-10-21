@@ -1,7 +1,7 @@
 import type { TokenSalida } from '../tipos'
 
-// URL base de la API, definida en frontend/.env
-export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api'
+// URL base de la API. Por defecto /api: mismo dominio vía proxy de Vite o rewrite de Vercel
+export const API_URL = import.meta.env.VITE_API_URL ?? '/api'
 
 /** Error de la API con el mensaje en español que envía el backend en "detail". */
 export class ErrorApi extends Error {
