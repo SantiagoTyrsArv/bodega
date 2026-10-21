@@ -8,9 +8,12 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    database_url: str = "postgresql+psycopg://bodega:bodega@localhost:5432/bodega"
+    database_url: str = "postgresql+psycopg://bodega:bodega@localhost:5434/bodega"
     # Orígenes permitidos separados por coma
     cors_origins: str = "http://localhost:5173"
+    # Credenciales del ADMIN que se crea si la base no tiene usuarios. Sin valor por defecto.
+    admin_correo: str
+    admin_clave: str
 
     @property
     def lista_cors(self) -> list[str]:

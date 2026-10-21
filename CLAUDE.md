@@ -164,7 +164,7 @@ Diseño **mobile-first**: botones de al menos 44 px, formularios de una columna,
 Variables de entorno del backend (`backend/.env`, con un `.env.example` en el repo):
 
 ```
-DATABASE_URL=postgresql+psycopg://bodega:bodega@localhost:5432/bodega
+DATABASE_URL=postgresql+psycopg://bodega:bodega@localhost:5434/bodega
 JWT_SECRET=cambia-esto
 CORS_ORIGINS=http://localhost:5173
 ADMIN_CORREO=admin@bodega.local

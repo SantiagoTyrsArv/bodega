@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: bodega
       POSTGRES_DB: bodega
     ports:
-      - "5432:5432"
+      - "5434:5432"  # 5434 en el host para no chocar con otros PostgreSQL locales
     volumes:
       - datos_bodega:/var/lib/postgresql/data
     healthcheck:
