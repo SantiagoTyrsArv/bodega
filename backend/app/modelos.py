@@ -13,7 +13,7 @@ from sqlalchemy import (
     Text,
     func,
 )
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Nombres de restricciones predecibles para que Alembic las genere bien
 CONVENCION = {
@@ -98,6 +98,7 @@ class Producto(Base):
     codigo: Mapped[str] = mapped_column(Text, unique=True)
     nombre: Mapped[str] = mapped_column(Text)
     categoria_id: Mapped[int | None] = mapped_column(ForeignKey("categoria.id"))
+    categoria: Mapped[Categoria | None] = relationship(lazy="joined")
     unidad: Mapped[str] = mapped_column(Text)
     precio_compra: Mapped[Decimal] = mapped_column(Precio)
     precio_venta: Mapped[Decimal] = mapped_column(Precio)

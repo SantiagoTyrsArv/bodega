@@ -7,8 +7,12 @@ import { CLAVE_YO } from './api/auth'
 import { alExpirarSesion } from './api/cliente'
 import Layout from './componentes/Layout'
 import './index.css'
+import Ajustes from './paginas/Ajustes'
 import Inicio from './paginas/Inicio'
 import Login from './paginas/Login'
+import ProductoDetalle from './paginas/ProductoDetalle'
+import ProductoNuevo from './paginas/ProductoNuevo'
+import Productos from './paginas/Productos'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -21,7 +25,14 @@ const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
   {
     element: <Layout />,
-    children: [{ index: true, element: <Inicio /> }],
+    children: [
+      { index: true, element: <Inicio /> },
+      { path: 'productos', element: <Productos /> },
+      { path: 'productos/nuevo', element: <ProductoNuevo /> },
+      { path: 'productos/:id', element: <ProductoDetalle /> },
+      { path: 'ajustes', element: <Ajustes /> },
+      { path: '*', element: <p className="text-slate-600">Página no encontrada.</p> },
+    ],
   },
 ])
 
