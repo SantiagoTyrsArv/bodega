@@ -24,7 +24,7 @@ def crear_admin_inicial(db: Session) -> bool:
     db.add(
         Usuario(
             nombre="Administrador",
-            correo=settings.admin_correo.strip().lower(),
+            correo=settings.admin_correo,
             clave_hash=hashear_clave(settings.admin_clave),
             rol=Rol.ADMIN,
         )

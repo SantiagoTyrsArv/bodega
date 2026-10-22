@@ -3,6 +3,8 @@ from functools import lru_cache
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.esquemas import Correo
+
 
 class Settings(BaseSettings):
     """Configuración leída desde variables de entorno o backend/.env."""
@@ -13,7 +15,9 @@ class Settings(BaseSettings):
     # Orígenes permitidos separados por coma
     cors_origins: str = "http://localhost:5173"
     # Credenciales del ADMIN que se crea si la base no tiene usuarios. Sin valor por defecto.
-    admin_correo: str
+    # El correo se valida como el de cualquier usuario: si no es válido, la API no arranca
+    # (si arrancara, el ADMIN no podría entrar porque el login exige un correo con @)
+    admin_correo: Correo
     admin_clave: str
 
     # Mínimo 32 caracteres; generar con: openssl rand -hex 32
