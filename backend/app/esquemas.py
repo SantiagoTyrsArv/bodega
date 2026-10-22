@@ -28,6 +28,31 @@ class UsuarioSalida(BaseModel):
     creado_en: datetime
 
 
+# Se guarda en minúsculas, igual que se busca en el login
+Correo = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, to_lower=True, pattern=r"^[^@\s]+@[^@\s]+$"),
+]
+# El largo mínimo de la clave lo valida el router para dar un mensaje claro
+Clave = Annotated[str, StringConstraints(max_length=200)]
+
+
+class UsuarioCrear(BaseModel):
+    nombre: Texto
+    correo: Correo
+    clave: Clave
+    rol: Rol = Rol.USUARIO
+
+
+class UsuarioEditar(BaseModel):
+    nombre: Texto | None = None
+    correo: Correo | None = None
+    # Si se envía, reemplaza la clave (para cuando alguien la olvida)
+    clave: Clave | None = None
+    rol: Rol | None = None
+    activo: bool | None = None
+
+
 class TokenSalida(BaseModel):
     access_token: str
     token_type: str = "bearer"
