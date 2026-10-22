@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -22,6 +22,15 @@ class Settings(BaseSettings):
     refresh_dias: int = 7
     # En producción (HTTPS) va en true: la cookie del refresh solo viaja por HTTPS
     cookie_segura: bool = False
+
+    @field_validator("database_url")
+    @classmethod
+    def usar_psycopg(cls, url: str) -> str:
+        """Neon y Render entregan postgresql://...; SQLAlchemy necesita el driver psycopg."""
+        for prefijo in ("postgresql://", "postgres://"):
+            if url.startswith(prefijo):
+                return "postgresql+psycopg://" + url.removeprefix(prefijo)
+        return url
 
     @property
     def lista_cors(self) -> list[str]:

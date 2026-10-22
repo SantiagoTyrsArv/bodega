@@ -11,8 +11,9 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# La URL viene de DATABASE_URL, no de alembic.ini
-config.set_main_option("sqlalchemy.url", get_settings().database_url)
+# La URL viene de DATABASE_URL, no de alembic.ini. El % se duplica porque
+# configparser lo interpreta (aparece en claves con caracteres codificados)
+config.set_main_option("sqlalchemy.url", get_settings().database_url.replace("%", "%%"))
 
 target_metadata = Base.metadata
 

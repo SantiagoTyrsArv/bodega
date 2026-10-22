@@ -1,0 +1,26 @@
+# Blueprint de Render para la API. En Render: New → Blueprint → este repositorio.
+services:
+  - type: web
+    name: bodega-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: uv sync --frozen --no-dev
+    # Las migraciones van antes de arrancar (el plan gratis no tiene pre-deploy)
+    startCommand: uv run --no-sync alembic upgrade head && uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/salud
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.13
+      # Cadena de conexión de Neon (postgresql://...?sslmode=require)
+      - key: DATABASE_URL
+        sync: false
+      # Render genera un valor aleatorio de 256 bits
+      - key: JWT_SECRET
+        generateValue: true
+      - key: COOKIE_SEGURA
+        value: "true"
+      - key: ADMIN_CORREO
+        sync: false
+      - key: ADMIN_CLAVE
+        sync: false
