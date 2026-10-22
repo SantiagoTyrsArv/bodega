@@ -312,3 +312,13 @@ def test_dos_salidas_simultaneas_no_dejan_stock_negativo(cliente, usuario, produ
     assert sorted(resultados) == ["Stock insuficiente: quedan 0 kg"] * 4 + ["ok"]
     db.expire_all()
     assert db.get(Producto, producto["id"]).stock == 0
+
+
+def test_movimiento_guarda_pedido_y_responsable(cliente, usuario, producto):
+    mover(cliente, usuario, producto["id"], "ENTRADA", "5")
+    r = mover(cliente, usuario, producto["id"], "SALIDA", "2", pedido=" 1234 ", responsable="Karen")
+    assert r.status_code == 201, r.text
+    assert r.json()["pedido"] == "1234"
+    assert r.json()["responsable"] == "Karen"
+    sin_datos = mover(cliente, usuario, producto["id"], "SALIDA", "1", pedido="", responsable=None)
+    assert sin_datos.json()["pedido"] is None and sin_datos.json()["responsable"] is None

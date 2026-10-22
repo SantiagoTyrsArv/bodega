@@ -99,6 +99,8 @@ class Producto(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     codigo: Mapped[str] = mapped_column(Text, unique=True)
     nombre: Mapped[str] = mapped_column(Text)
+    # Tamaño o formato del producto, p. ej. "1.5 L" o "400 ml"
+    presentacion: Mapped[str | None] = mapped_column(Text)
     categoria_id: Mapped[int | None] = mapped_column(ForeignKey("categoria.id"))
     categoria: Mapped[Categoria | None] = relationship(lazy="joined")
     unidad: Mapped[str] = mapped_column(Text)
@@ -134,6 +136,8 @@ class Movimiento(Base):
     precio_unitario: Mapped[Decimal] = mapped_column(Precio)
     stock_despues: Mapped[Decimal] = mapped_column(Cantidad)
     comentario: Mapped[str | None] = mapped_column(Text)
+    pedido: Mapped[str | None] = mapped_column(Text)  # número de pedido
+    responsable: Mapped[str | None] = mapped_column(Text)  # cliente o quien recibe/entrega
     # Un movimiento solo se anula una vez: unique impide dos anulaciones del mismo original
     anula_a: Mapped[int | None] = mapped_column(ForeignKey("movimiento.id"), unique=True)
     fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

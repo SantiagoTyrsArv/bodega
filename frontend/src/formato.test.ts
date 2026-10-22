@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { rangoDeDias } from './formato'
+import { nombreProducto, rangoDeDias } from './formato'
 
 describe('rangoDeDias', () => {
   it('va del inicio del primer día al inicio del día siguiente al último, en hora local', () => {
@@ -18,5 +18,12 @@ describe('rangoDeDias', () => {
   it('sin fechas no filtra', () => {
     expect(rangoDeDias('', '')).toEqual({})
     expect(rangoDeDias('2026-10-01', '')).not.toHaveProperty('hasta')
+  })
+})
+
+describe('nombreProducto', () => {
+  it('agrega la presentación si existe', () => {
+    expect(nombreProducto({ nombre: 'Coca-Cola', presentacion: '1.5 L' })).toBe('Coca-Cola 1.5 L')
+    expect(nombreProducto({ nombre: 'Arroz', presentacion: null })).toBe('Arroz')
   })
 })

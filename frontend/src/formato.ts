@@ -25,6 +25,10 @@ export const UNIDADES_CORTAS: Record<Unidad, string> = {
   CAJA: 'cajas',
 }
 
+/** Nombre con su presentación: "Coca-Cola 1.5 L". */
+export const nombreProducto = (p: Pick<Producto, 'nombre' | 'presentacion'>) =>
+  p.presentacion ? `${p.nombre} ${p.presentacion}` : p.nombre
+
 /** Mismo criterio que el backend: tiene mínimo definido y el stock llegó a él. */
 export const estaBajoMinimo = (p: Producto) =>
   Number(p.stock_minimo) > 0 && Number(p.stock) <= Number(p.stock_minimo)

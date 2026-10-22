@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { formatoCantidad, formatoDinero, formatoFecha, UNIDADES_CORTAS } from '../formato'
+import { formatoCantidad, formatoDinero, formatoFecha, nombreProducto, UNIDADES_CORTAS } from '../formato'
 import { TEXTO_MOTIVO } from '../inventario'
 import type { Movimiento } from '../tipos'
 
@@ -37,7 +37,7 @@ export default function ListaMovimientos({ movimientos, mostrarProducto = false,
             </span>
             <div className="min-w-0 flex-1">
               <p className="font-medium text-slate-800">
-                {mostrarProducto && <span>{m.producto.nombre} · </span>}
+                {mostrarProducto && <span>{nombreProducto(m.producto)} · </span>}
                 <span className={anulado ? 'line-through' : ''}>
                   {entrada ? 'Entrada' : 'Salida'} · {TEXTO_MOTIVO[m.motivo]}
                 </span>
@@ -47,6 +47,11 @@ export default function ListaMovimientos({ movimientos, mostrarProducto = false,
               <p className="text-sm text-slate-500">
                 {formatoFecha(m.fecha)} · {m.usuario.nombre} · #{m.id}
               </p>
+              {(m.responsable || m.pedido) && (
+                <p className="text-sm text-slate-600">
+                  {[m.responsable, m.pedido && `Pedido ${m.pedido}`].filter(Boolean).join(' · ')}
+                </p>
+              )}
               {m.comentario && <p className="text-sm text-slate-600">“{m.comentario}”</p>}
             </div>
             <div className="text-right">

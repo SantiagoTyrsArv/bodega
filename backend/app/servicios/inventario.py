@@ -7,6 +7,7 @@ queda aquí: el stock pasaría a leerse y escribirse por (producto, bodega)
 dentro de _bloquear_producto y _aplicar.
 """
 
+from datetime import datetime
 from decimal import Decimal
 
 from fastapi import status
@@ -65,7 +66,10 @@ def _aplicar(
     cantidad: Decimal,
     precio_unitario: Decimal,
     comentario: str | None = None,
+    pedido: str | None = None,
+    responsable: str | None = None,
     anula_a: int | None = None,
+    fecha: datetime | None = None,
 ) -> Movimiento:
     """Calcula el stock nuevo, lo valida y deja el movimiento listo para el commit."""
     signo = 1 if tipo == TipoMovimiento.ENTRADA else -1
@@ -85,8 +89,12 @@ def _aplicar(
         precio_unitario=precio_unitario,
         stock_despues=nuevo_stock,
         comentario=comentario or None,
+        pedido=pedido or None,
+        responsable=responsable or None,
         anula_a=anula_a,
     )
+    if fecha is not None:
+        movimiento.fecha = fecha
     db.add(movimiento)
     producto.stock = nuevo_stock
     return movimiento
@@ -108,8 +116,13 @@ def registrar_movimiento(
     cantidad: Decimal,
     precio_unitario: Decimal | None = None,
     comentario: str | None = None,
+    pedido: str | None = None,
+    responsable: str | None = None,
     actualizar_precio: bool = False,
+    fecha: datetime | None = None,
 ) -> Movimiento:
+    """Registra una entrada o salida. fecha no llega por la API: solo la usa la
+    importación de datos históricos; si falta, la pone la base (now())."""
     tipo, motivo = TipoMovimiento(tipo), Motivo(motivo)
     if motivo not in MOTIVOS_VALIDOS[tipo]:
         validos = ", ".join(sorted(MOTIVOS_VALIDOS[tipo]))
@@ -137,7 +150,17 @@ def registrar_movimiento(
         precio_unitario = producto.precio_compra if es_entrada else producto.precio_venta
 
     movimiento = _aplicar(
-        db, producto, usuario, tipo, motivo, cantidad, precio_unitario, comentario
+        db,
+        producto,
+        usuario,
+        tipo,
+        motivo,
+        cantidad,
+        precio_unitario,
+        comentario,
+        pedido,
+        responsable,
+        fecha=fecha,
     )
     if actualizar_precio:
         producto.precio_compra = precio_unitario

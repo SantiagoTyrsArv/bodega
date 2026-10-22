@@ -28,6 +28,7 @@ export interface Producto {
   id: number
   codigo: string
   nombre: string
+  presentacion: string | null
   categoria: Categoria | null
   unidad: Unidad
   precio_compra: string
@@ -44,6 +45,7 @@ export interface Producto {
 export interface ProductoDatos {
   codigo: string
   nombre: string
+  presentacion: string | null
   categoria_id: number | null
   unidad: Unidad
   precio_compra: string
@@ -54,7 +56,7 @@ export interface ProductoDatos {
 
 export interface Movimiento {
   id: number
-  producto: Pick<Producto, 'id' | 'codigo' | 'nombre' | 'unidad'>
+  producto: Pick<Producto, 'id' | 'codigo' | 'nombre' | 'presentacion' | 'unidad'>
   usuario: Pick<Usuario, 'id' | 'nombre'>
   tipo: TipoMovimiento
   motivo: Motivo
@@ -62,6 +64,8 @@ export interface Movimiento {
   precio_unitario: string
   stock_despues: string
   comentario: string | null
+  pedido: string | null
+  responsable: string | null
   anula_a: number | null
   anulado_por: number | null
   fecha: string
@@ -74,6 +78,8 @@ export interface MovimientoDatos {
   cantidad: string
   precio_unitario?: string
   comentario?: string | null
+  pedido?: string | null
+  responsable?: string | null
   actualizar_precio?: boolean
 }
 

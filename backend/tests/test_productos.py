@@ -179,3 +179,12 @@ def test_codigo_inexistente_devuelve_404(cliente, usuario):
 def test_productos_requieren_sesion(cliente):
     assert cliente.get("/api/productos").status_code == 401
     assert cliente.get("/api/categorias").status_code == 401
+
+
+def test_presentacion_del_producto(cliente, admin, usuario):
+    p = crear_producto(cliente, admin, presentacion="1.5 L")
+    assert p["presentacion"] == "1.5 L"
+    r = cliente.patch(f"/api/productos/{p['id']}", json={"presentacion": "400 ml"}, headers=admin)
+    assert r.json()["presentacion"] == "400 ml"
+    r = cliente.patch(f"/api/productos/{p['id']}", json={"presentacion": "2 L"}, headers=usuario)
+    assert r.status_code == 403

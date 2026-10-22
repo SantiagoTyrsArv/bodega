@@ -6,7 +6,7 @@ import { useResumen } from '../api/resumen'
 import { AvisoCodigoNuevo, IconoCamara } from '../componentes/Buscador'
 import Escaner from '../componentes/Escaner'
 import ListaMovimientos from '../componentes/ListaMovimientos'
-import { formatoCantidad, formatoDinero, UNIDADES_CORTAS } from '../formato'
+import { formatoCantidad, formatoDinero, nombreProducto, UNIDADES_CORTAS } from '../formato'
 
 function Tarjeta({ titulo, valor, alerta = false }: { titulo: string; valor: string; alerta?: boolean }) {
   return (
@@ -72,7 +72,7 @@ export default function Inicio() {
                   return (
                     <li key={p.id}>
                       <Link to={`/productos/${p.id}`} className="flex min-h-11 items-center gap-3 py-2 hover:bg-slate-50">
-                        <span className="min-w-0 flex-1 truncate font-medium text-slate-800">{p.nombre}</span>
+                        <span className="min-w-0 flex-1 truncate font-medium text-slate-800">{nombreProducto(p)}</span>
                         <span className="text-right text-sm tabular-nums">
                           <span className="font-semibold text-red-700">
                             {formatoCantidad(p.stock)} {unidad}

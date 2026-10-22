@@ -76,6 +76,7 @@ class ProductoCrear(BaseModel):
 
     codigo: Texto
     nombre: Texto
+    presentacion: str | None = None
     categoria_id: int | None = None
     unidad: Unidad
     precio_compra: Precio
@@ -91,6 +92,7 @@ class ProductoEditar(BaseModel):
 
     codigo: Texto | None = None
     nombre: Texto | None = None
+    presentacion: str | None = None
     categoria_id: int | None = None
     unidad: Unidad | None = None
     precio_compra: Precio | None = None
@@ -106,6 +108,7 @@ class ProductoSalida(BaseModel):
     id: int
     codigo: str
     nombre: str
+    presentacion: str | None
     categoria: CategoriaSalida | None
     unidad: Unidad
     precio_compra: Decimal
@@ -126,6 +129,8 @@ class MovimientoEntrada(BaseModel):
     # Si no se envía: precio de compra en entradas, precio de venta en salidas
     precio_unitario: Precio | None = None
     comentario: Annotated[str, StringConstraints(strip_whitespace=True)] | None = None
+    pedido: Annotated[str, StringConstraints(strip_whitespace=True)] | None = None
+    responsable: Annotated[str, StringConstraints(strip_whitespace=True)] | None = None
     # Solo ADMIN y solo en entradas: actualiza producto.precio_compra
     actualizar_precio: bool = False
 
@@ -136,6 +141,7 @@ class ProductoBreve(BaseModel):
     id: int
     codigo: str
     nombre: str
+    presentacion: str | None
     unidad: Unidad
 
 
@@ -158,6 +164,8 @@ class MovimientoSalida(BaseModel):
     precio_unitario: Decimal
     stock_despues: Decimal
     comentario: str | None
+    pedido: str | None
+    responsable: str | None
     anula_a: int | None
     anulado_por: int | None
     fecha: datetime

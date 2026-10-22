@@ -64,16 +64,16 @@ def test_stock_xlsx_con_valores_y_total(cliente, admin, usuario):
     assert "attachment" in r.headers["content-disposition"]
     assert 'filename="stock-' in r.headers["content-disposition"]
 
-    assert datos[0][:5] == ["Código", "Producto", "Categoría", "Unidad", "Stock"]
+    assert datos[0][:5] == ["Código", "Producto", "Presentación", "Categoría", "Unidad"]
     assert [f[0] for f in datos[1:]] == ["A1", "B2", "Total"]  # sin el desactivado
     a1 = datos[1]
-    assert a1[4] == 10.5 and a1[6] == "Sí"
-    assert a1[9] == 26250  # 10.5 × 2500
+    assert a1[5] == 10.5 and a1[7] == "Sí"
+    assert a1[10] == 26250  # 10.5 × 2500
     # El total coincide con /resumen
     resumen = cliente.get("/api/resumen", headers=usuario).json()
     total = datos[-1]
-    assert Decimal(str(total[9])) == Decimal(resumen["valor_compra"])
-    assert Decimal(str(total[10])) == Decimal(resumen["valor_venta"])
+    assert Decimal(str(total[10])) == Decimal(resumen["valor_compra"])
+    assert Decimal(str(total[11])) == Decimal(resumen["valor_venta"])
 
 
 def test_movimientos_xlsx_filtra_por_fecha_y_usa_hora_local(cliente, admin, usuario, db):
@@ -105,16 +105,16 @@ def test_movimientos_xlsx_filtra_por_fecha_y_usa_hora_local(cliente, admin, usua
     assert [f[1] for f in datos[1:]] == [m2["id"]]  # m1 cae el 30 de sep en Colombia
     fila = datos[1]
     assert fila[0] == datetime(2026, 10, 1, 10, 0)
-    assert fila[4:8] == ["Salida", "Uso", 2, "Kg"]
-    assert fila[9] == 300  # 2 × 150
-    assert fila[14] == anulacion["id"]  # anulado por
+    assert fila[5:9] == ["Salida", "Uso", 2, "Kg"]
+    assert fila[10] == 300  # 2 × 150
+    assert fila[17] == anulacion["id"]  # anulado por
 
     # Sin filtros: los tres, del más antiguo al más reciente
     datos = filas(cliente.get("/api/reportes/movimientos.xlsx", headers=usuario))
     assert [f[1] for f in datos[1:]] == [m1["id"], m2["id"], anulacion["id"]]
     assert datos[1][0] == datetime(2026, 10, 1, 4, 30)  # sin desfase, en UTC
-    assert datos[1][12] == "primero"
-    assert datos[3][5] == "Anulación" and datos[3][13] == m2["id"]
+    assert datos[1][15] == "primero"
+    assert datos[3][6] == "Anulación" and datos[3][16] == m2["id"]
 
     # Por tipo
     datos = filas(cliente.get("/api/reportes/movimientos.xlsx?tipo=ENTRADA", headers=usuario))
@@ -143,11 +143,14 @@ def test_textos_que_parecen_formulas_se_guardan_como_texto(cliente, admin, usuar
         "precio_venta": "1.00",
     }
     p = cliente.post("/api/productos", json=datos, headers=admin).json()
-    mover(cliente, usuario, p["id"], "ENTRADA", "1", comentario="=SUM(A1:A9)")
+    mover(cliente, usuario, p["id"], "ENTRADA", "1", comentario="=SUM(A1:A9)", responsable="=1+1")
 
     for ruta, columnas in [
         ("/api/reportes/stock.xlsx", {1: "=1+2", 2: peligroso}),
-        ("/api/reportes/movimientos.xlsx", {3: "=1+2", 4: peligroso, 13: "=SUM(A1:A9)"}),
+        (
+            "/api/reportes/movimientos.xlsx",
+            {3: "=1+2", 4: peligroso, 15: "=1+1", 16: "=SUM(A1:A9)"},
+        ),
     ]:
         r = cliente.get(ruta, headers=usuario)
         hoja = load_workbook(BytesIO(r.content)).active

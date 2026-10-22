@@ -16,6 +16,7 @@ const decimal = (maxDecimales: number, mensaje: string) =>
 const esquema = z.object({
   codigo: z.string().trim().min(1, 'Escribe o escanea el código'),
   nombre: z.string().trim().min(1, 'Escribe el nombre'),
+  presentacion: z.string().trim(),
   categoria_id: z.string(),
   unidad: z.enum(Object.keys(UNIDADES) as [Unidad, ...Unidad[]]),
   precio_compra: decimal(2, 'Precio inválido (máximo 2 decimales)'),
@@ -64,6 +65,7 @@ function Formulario({
     defaultValues: {
       codigo: producto?.codigo ?? codigoInicial,
       nombre: producto?.nombre ?? '',
+      presentacion: producto?.presentacion ?? '',
       categoria_id: producto?.categoria ? String(producto.categoria.id) : '',
       unidad: producto?.unidad ?? 'UNIDAD',
       precio_compra: producto?.precio_compra ?? '',
@@ -77,6 +79,7 @@ function Formulario({
     onEnviar({
       ...d,
       categoria_id: d.categoria_id ? Number(d.categoria_id) : null,
+      presentacion: d.presentacion || null,
       nota: d.nota || null,
     })
 
@@ -92,6 +95,11 @@ function Formulario({
         <span className="etiqueta">Nombre</span>
         <input {...register('nombre')} autoComplete="off" className="campo" />
         {errors.nombre && <span className="error-campo">{errors.nombre.message}</span>}
+      </label>
+
+      <label className="block">
+        <span className="etiqueta">Presentación (opcional)</span>
+        <input {...register('presentacion')} placeholder="Ej.: 1.5 L, 400 ml" autoComplete="off" className="campo" />
       </label>
 
       <label className="block">

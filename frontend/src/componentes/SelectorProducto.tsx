@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useBuscarCodigo, useProductos } from '../api/productos'
-import { formatoCantidad, UNIDADES_CORTAS } from '../formato'
+import { formatoCantidad, nombreProducto, UNIDADES_CORTAS } from '../formato'
 import type { Producto } from '../tipos'
 import Buscador, { AvisoCodigoNuevo } from './Buscador'
 
@@ -47,7 +47,7 @@ export default function SelectorProducto({ onElegir }: { onElegir: (p: Producto)
                 className="flex min-h-11 w-full items-center gap-3 px-3 py-2 text-left hover:bg-slate-50"
               >
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-medium text-slate-800">{p.nombre}</span>
+                  <span className="block truncate font-medium text-slate-800">{nombreProducto(p)}</span>
                   <span className="block truncate text-sm text-slate-500">{p.codigo}</span>
                 </span>
                 <span className="text-sm text-slate-600 tabular-nums">

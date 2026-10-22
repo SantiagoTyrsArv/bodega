@@ -5,7 +5,7 @@ import { useMovimientos } from '../api/movimientos'
 import { useEditarProducto, useProducto } from '../api/productos'
 import FormProducto from '../componentes/FormProducto'
 import ListaMovimientos from '../componentes/ListaMovimientos'
-import { estaBajoMinimo, formatoCantidad, formatoDinero, UNIDADES, UNIDADES_CORTAS } from '../formato'
+import { estaBajoMinimo, formatoCantidad, formatoDinero, nombreProducto, UNIDADES, UNIDADES_CORTAS } from '../formato'
 
 function Dato({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
@@ -38,7 +38,7 @@ export default function ProductoDetalle() {
       </Link>
 
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">{producto.nombre}</h1>
+        <h1 className="text-2xl font-bold text-slate-800">{nombreProducto(producto)}</h1>
         <p className="text-slate-500">{producto.codigo}</p>
         {!producto.activo && (
           <p className="mt-2 inline-block rounded bg-slate-200 px-2 py-0.5 text-sm font-medium text-slate-700">

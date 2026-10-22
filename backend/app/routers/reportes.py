@@ -54,6 +54,7 @@ Columnas = list[tuple[str, int, str | None]]
 COLUMNAS_STOCK: Columnas = [
     ("Código", 16, None),
     ("Producto", 32, None),
+    ("Presentación", 14, None),
     ("Categoría", 16, None),
     ("Unidad", 9, None),
     ("Stock", 12, CANTIDAD),
@@ -70,6 +71,7 @@ COLUMNAS_MOVIMIENTOS: Columnas = [
     ("N.º", 7, None),
     ("Código", 16, None),
     ("Producto", 32, None),
+    ("Presentación", 14, None),
     ("Tipo", 9, None),
     ("Motivo", 12, None),
     ("Cantidad", 12, CANTIDAD),
@@ -78,6 +80,8 @@ COLUMNAS_MOVIMIENTOS: Columnas = [
     ("Valor", 15, DINERO),
     ("Stock después", 14, CANTIDAD),
     ("Usuario", 18, None),
+    ("N.º pedido", 12, None),
+    ("Cliente / responsable", 22, None),
     ("Comentario", 30, None),
     ("Anula al N.º", 12, None),
     ("Anulado por N.º", 15, None),
@@ -161,6 +165,7 @@ def stock_xlsx(_: UsuarioActual, db: Db, desfase: Desfase = 0) -> Response:
             [
                 p.codigo,
                 p.nombre,
+                p.presentacion or "",
                 p.categoria.nombre if p.categoria else "",
                 TEXTO_UNIDAD[Unidad(p.unidad)],
                 p.stock,
@@ -174,7 +179,7 @@ def stock_xlsx(_: UsuarioActual, db: Db, desfase: Desfase = 0) -> Response:
         )
     # Igual que /resumen: se redondea la suma, no cada fila
     hoja.append(
-        ["Total"] + [None] * 8 + [total_compra.quantize(CENTAVO), total_venta.quantize(CENTAVO)]
+        ["Total"] + [None] * 9 + [total_compra.quantize(CENTAVO), total_venta.quantize(CENTAVO)]
     )
     for celda in hoja[hoja.max_row]:
         celda.font = Font(bold=True)
@@ -214,6 +219,7 @@ def movimientos_xlsx(
                 m.id,
                 m.producto.codigo,
                 m.producto.nombre,
+                m.producto.presentacion or "",
                 TEXTO_TIPO[TipoMovimiento(m.tipo)],
                 TEXTO_MOTIVO[Motivo(m.motivo)],
                 m.cantidad,
@@ -222,6 +228,8 @@ def movimientos_xlsx(
                 (m.cantidad * m.precio_unitario).quantize(CENTAVO),
                 m.stock_despues,
                 m.usuario.nombre,
+                m.pedido or "",
+                m.responsable or "",
                 m.comentario or "",
                 m.anula_a,
                 m.anulado_por,

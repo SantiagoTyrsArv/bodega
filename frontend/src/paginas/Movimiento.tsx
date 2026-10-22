@@ -7,7 +7,7 @@ import { useUsuarioActual } from '../api/auth'
 import { useRegistrarMovimiento } from '../api/movimientos'
 import { useProducto } from '../api/productos'
 import SelectorProducto from '../componentes/SelectorProducto'
-import { formatoCantidad, formatoDinero, UNIDADES_CORTAS } from '../formato'
+import { formatoCantidad, formatoDinero, nombreProducto, UNIDADES_CORTAS } from '../formato'
 import { MOTIVOS, stockResultante } from '../inventario'
 import type { Motivo, Movimiento as TipoMov, Producto, TipoMovimiento } from '../tipos'
 
@@ -30,6 +30,8 @@ const esquema = z.object({
     .transform((s) => s.replace(',', '.'))
     .pipe(z.string().regex(/^\d{1,10}(\.\d{1,2})?$/, 'Precio inválido (máximo 2 decimales)')),
   motivo: z.string(),
+  responsable: z.string().trim(),
+  pedido: z.string().trim(),
   comentario: z.string().trim(),
   actualizar_precio: z.boolean(),
 })
@@ -64,6 +66,8 @@ function Formulario({
       cantidad: '',
       precio_unitario: esEntrada ? producto.precio_compra : producto.precio_venta,
       motivo: MOTIVOS[tipo][0].valor,
+      responsable: '',
+      pedido: '',
       comentario: '',
       actualizar_precio: false,
     },
@@ -81,6 +85,8 @@ function Formulario({
         motivo: d.motivo as Motivo,
         cantidad: d.cantidad,
         precio_unitario: d.precio_unitario,
+        responsable: d.responsable || null,
+        pedido: d.pedido || null,
         comentario: d.comentario || null,
         actualizar_precio: esEntrada && d.actualizar_precio,
       },
@@ -91,7 +97,7 @@ function Formulario({
     <form onSubmit={handleSubmit(enviar)} noValidate className="space-y-4">
       <div className="flex items-start justify-between gap-3 rounded-lg bg-slate-50 p-3">
         <div className="min-w-0">
-          <p className="truncate font-semibold text-slate-800">{producto.nombre}</p>
+          <p className="truncate font-semibold text-slate-800">{nombreProducto(producto)}</p>
           <p className="truncate text-sm text-slate-500">{producto.codigo}</p>
           <p className="text-sm text-slate-600">
             Stock actual: <span className="font-medium tabular-nums">{formatoCantidad(producto.stock)} {unidad}</span>
@@ -130,6 +136,16 @@ function Formulario({
             </option>
           ))}
         </select>
+      </label>
+
+      <label className="block">
+        <span className="etiqueta">{esEntrada ? 'Proveedor o responsable (opcional)' : 'Cliente o responsable (opcional)'}</span>
+        <input {...register('responsable')} autoComplete="off" className="campo" />
+      </label>
+
+      <label className="block">
+        <span className="etiqueta">N.º de pedido (opcional)</span>
+        <input {...register('pedido')} autoComplete="off" className="campo" />
       </label>
 
       <label className="block">
@@ -186,7 +202,7 @@ export default function Movimiento() {
         <div role="status" className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900">
           <p className="font-semibold">
             {ultimo.tipo === 'ENTRADA' ? 'Entrada' : 'Salida'} registrada: {ultimo.tipo === 'ENTRADA' ? '+' : '−'}
-            {formatoCantidad(ultimo.cantidad)} {UNIDADES_CORTAS[ultimo.producto.unidad]} de {ultimo.producto.nombre}
+            {formatoCantidad(ultimo.cantidad)} {UNIDADES_CORTAS[ultimo.producto.unidad]} de {nombreProducto(ultimo.producto)}
           </p>
           <p>
             Stock ahora: {formatoCantidad(ultimo.stock_despues)} {UNIDADES_CORTAS[ultimo.producto.unidad]} · Valor:{' '}
@@ -210,7 +226,7 @@ export default function Movimiento() {
           <p className="text-slate-500">Cargando…</p>
         ) : !producto.activo ? (
           <div className="space-y-2">
-            <p className="text-slate-700">{producto.nombre} está desactivado y no admite movimientos.</p>
+            <p className="text-slate-700">{nombreProducto(producto)} está desactivado y no admite movimientos.</p>
             <button onClick={() => elegir(null)} className="boton-secundario">Elegir otro producto</button>
           </div>
         ) : (

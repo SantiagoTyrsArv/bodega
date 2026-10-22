@@ -76,6 +76,7 @@ Cuatro tablas. Usa `NUMERIC(12,3)` para cantidades y `NUMERIC(12,2)` para precio
 - `id` serial PK
 - `codigo` text único (el código de barras)
 - `nombre` text
+- `presentacion` text nullable (p. ej. "1.5 L", "400 ml")
 - `categoria_id` FK nullable
 - `unidad` text: `UNIDAD` | `KG` | `LITRO` | `CAJA`
 - `precio_compra` numeric(12,2) ≥ 0
@@ -96,6 +97,8 @@ Cuatro tablas. Usa `NUMERIC(12,3)` para cantidades y `NUMERIC(12,2)` para precio
 - `precio_unitario` numeric(12,2)
 - `stock_despues` numeric(12,3)
 - `comentario` text nullable
+- `pedido` text nullable (n.º de pedido)
+- `responsable` text nullable (cliente o quien recibe/entrega)
 - `anula_a` FK a movimiento, nullable
 - `fecha` timestamptz, por defecto now()
 - Índice en `(producto_id, fecha)`
@@ -133,7 +136,7 @@ Prefijo `/api`. JSON. Errores con forma `{"detail": "mensaje en español"}`.
 | PATCH | `/productos/{id}` | ADMIN | no permite cambiar `stock` |
 | GET | `/productos/{id}/movimientos` | todos | historial del producto |
 | GET | `/movimientos?desde=&hasta=&tipo=&producto_id=` | todos | paginado |
-| POST | `/movimientos` | todos | `{producto_id, tipo, motivo, cantidad, precio_unitario?, comentario?, actualizar_precio?}` |
+| POST | `/movimientos` | todos | `{producto_id, tipo, motivo, cantidad, precio_unitario?, comentario?, pedido?, responsable?, actualizar_precio?}` |
 | POST | `/movimientos/{id}/anular` | ADMIN | |
 | GET | `/resumen` | todos | total productos, valor a compra, valor a venta, productos bajo mínimo, últimos 10 movimientos |
 | GET | `/reportes/stock.xlsx` | todos | stock con precios y valor total |
@@ -201,6 +204,8 @@ npm run dev                                 # http://localhost:5173
 npm run test
 npm run lint && npm run build
 ```
+
+Importar el Excel de inventario anterior (hojas Inventario y Movimientos): `uv run python -m app.importar_excel archivo.xlsx` muestra el plan; con `--aplicar` lo guarda. No importa dos veces los mismos códigos.
 
 Cada cambio al modelo va con una migración de Alembic (`uv run alembic revision --autogenerate -m "..."`), revisada a mano.
 

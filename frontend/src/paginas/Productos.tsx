@@ -5,7 +5,7 @@ import { useCategorias } from '../api/categorias'
 import { descargar } from '../api/cliente'
 import { useBuscarCodigo, useProductos } from '../api/productos'
 import Buscador, { AvisoCodigoNuevo } from '../componentes/Buscador'
-import { desfaseLocal, estaBajoMinimo, formatoCantidad, formatoDinero, UNIDADES_CORTAS } from '../formato'
+import { desfaseLocal, estaBajoMinimo, formatoCantidad, formatoDinero, nombreProducto, UNIDADES_CORTAS } from '../formato'
 
 export default function Productos() {
   const { data: usuario } = useUsuarioActual()
@@ -121,7 +121,7 @@ export default function Productos() {
               <li key={p.id}>
                 <Link to={`/productos/${p.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-slate-800">{p.nombre}</p>
+                    <p className="truncate font-medium text-slate-800">{nombreProducto(p)}</p>
                     <p className="truncate text-sm text-slate-500">
                       {p.codigo}
                       {p.categoria && ` · ${p.categoria.nombre}`}
