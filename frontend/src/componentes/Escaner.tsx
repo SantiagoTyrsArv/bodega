@@ -15,7 +15,9 @@ async function iniciarLector(video: HTMLVideoElement, alLeer: (texto: string, co
     BarcodeFormat.CODE_128,
   ]
   const lector = new BrowserMultiFormatReader(new Map([[DecodeHintType.POSSIBLE_FORMATS, formatos]]))
-  return lector.decodeFromConstraints({ video: { facingMode: 'environment' } }, video, (resultado, _e, controles) => {
+  // Sin tamaño, el navegador entrega 640×480 y cuesta leer códigos pequeños o lejanos
+  const camara = { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
+  return lector.decodeFromConstraints({ video: camara }, video, (resultado, _e, controles) => {
     if (resultado) alLeer(resultado.getText(), controles)
   })
 }
