@@ -118,6 +118,15 @@ def _hoja(libro: Workbook, titulo: str, columnas: Columnas) -> Worksheet:
     return hoja
 
 
+def _agregar_fila(hoja: Worksheet, valores: list) -> None:
+    """Agrega una fila. Los textos (nombres, comentarios) los escriben los usuarios: se marcan
+    como texto para que uno que empiece con "=" no se convierta en fórmula al abrir el Excel."""
+    hoja.append(valores)
+    for celda in hoja[hoja.max_row]:
+        if isinstance(celda.value, str):
+            celda.data_type = "s"
+
+
 def _formatos(hoja: Worksheet, columnas: Columnas) -> None:
     for i, (_, _, formato) in enumerate(columnas, start=1):
         if formato:
@@ -147,7 +156,8 @@ def stock_xlsx(_: UsuarioActual, db: Db, desfase: Desfase = 0) -> Response:
     for p in productos:
         total_compra += p.stock * p.precio_compra
         total_venta += p.stock * p.precio_venta
-        hoja.append(
+        _agregar_fila(
+            hoja,
             [
                 p.codigo,
                 p.nombre,
@@ -160,7 +170,7 @@ def stock_xlsx(_: UsuarioActual, db: Db, desfase: Desfase = 0) -> Response:
                 p.precio_venta,
                 (p.stock * p.precio_compra).quantize(CENTAVO),
                 (p.stock * p.precio_venta).quantize(CENTAVO),
-            ]
+            ],
         )
     # Igual que /resumen: se redondea la suma, no cada fila
     hoja.append(
@@ -197,7 +207,8 @@ def movimientos_xlsx(
         .order_by(Movimiento.fecha, Movimiento.id)
     )
     for m in db.scalars(consulta):
-        hoja.append(
+        _agregar_fila(
+            hoja,
             [
                 m.fecha.astimezone(zona).replace(tzinfo=None),
                 m.id,
@@ -214,7 +225,7 @@ def movimientos_xlsx(
                 m.comentario or "",
                 m.anula_a,
                 m.anulado_por,
-            ]
+            ],
         )
     _formatos(hoja, COLUMNAS_MOVIMIENTOS)
     hoja.auto_filter.ref = hoja.dimensions

@@ -131,3 +131,27 @@ def test_movimientos_xlsx_rango_invertido(cliente, usuario):
 def test_reportes_requieren_sesion(cliente):
     assert cliente.get("/api/reportes/stock.xlsx").status_code == 401
     assert cliente.get("/api/reportes/movimientos.xlsx").status_code == 401
+
+
+def test_textos_que_parecen_formulas_se_guardan_como_texto(cliente, admin, usuario):
+    peligroso = '=HYPERLINK("http://ejemplo.com","clic")'
+    datos = {
+        "codigo": "=1+2",
+        "nombre": peligroso,
+        "unidad": "UNIDAD",
+        "precio_compra": "1.00",
+        "precio_venta": "1.00",
+    }
+    p = cliente.post("/api/productos", json=datos, headers=admin).json()
+    mover(cliente, usuario, p["id"], "ENTRADA", "1", comentario="=SUM(A1:A9)")
+
+    for ruta, columnas in [
+        ("/api/reportes/stock.xlsx", {1: "=1+2", 2: peligroso}),
+        ("/api/reportes/movimientos.xlsx", {3: "=1+2", 4: peligroso, 13: "=SUM(A1:A9)"}),
+    ]:
+        r = cliente.get(ruta, headers=usuario)
+        hoja = load_workbook(BytesIO(r.content)).active
+        for columna, esperado in columnas.items():
+            celda = hoja.cell(row=2, column=columna)
+            assert celda.value == esperado
+            assert celda.data_type == "s", f"{ruta} columna {columna} quedó como fórmula"
