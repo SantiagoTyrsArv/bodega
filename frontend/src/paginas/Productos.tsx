@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useUsuarioActual } from '../api/auth'
 import { useCategorias } from '../api/categorias'
+import { descargar } from '../api/cliente'
 import { useBuscarCodigo, useProductos } from '../api/productos'
 import Buscador, { AvisoCodigoNuevo } from '../componentes/Buscador'
-import { estaBajoMinimo, formatoCantidad, formatoDinero, UNIDADES_CORTAS } from '../formato'
+import { desfaseLocal, estaBajoMinimo, formatoCantidad, formatoDinero, UNIDADES_CORTAS } from '../formato'
 
 export default function Productos() {
   const { data: usuario } = useUsuarioActual()
@@ -15,6 +16,8 @@ export default function Productos() {
   const [q, setQ] = useState('')
   const [categoriaId, setCategoriaId] = useState('')
   const [verInactivos, setVerInactivos] = useState(false)
+  const [descargando, setDescargando] = useState(false)
+  const [errorDescarga, setErrorDescarga] = useState('')
   const navegar = useNavigate()
   // Un código escaneado (o escrito + Enter) que existe abre su ficha
   const codigo = useBuscarCodigo((p) => navegar(`/productos/${p.id}`))
@@ -31,16 +34,35 @@ export default function Productos() {
     activo: !verInactivos,
   })
 
+  // Stock de todos los productos activos, sin importar los filtros de la pantalla
+  const descargarExcel = async () => {
+    setDescargando(true)
+    setErrorDescarga('')
+    try {
+      await descargar(`/reportes/stock.xlsx?desfase=${desfaseLocal()}`)
+    } catch (e) {
+      setErrorDescarga(e instanceof Error ? e.message : 'No se pudo descargar')
+    } finally {
+      setDescargando(false)
+    }
+  }
+
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-slate-800">Productos</h1>
-        {esAdmin && (
-          <Link to="/productos/nuevo" className="boton-primario">
-            + Nuevo
-          </Link>
-        )}
+        <div className="flex gap-2">
+          <button onClick={descargarExcel} disabled={descargando} className="boton-secundario">
+            {descargando ? 'Descargando…' : 'Excel'}
+          </button>
+          {esAdmin && (
+            <Link to="/productos/nuevo" className="boton-primario">
+              + Nuevo
+            </Link>
+          )}
+        </div>
       </div>
+      {errorDescarga && <p className="text-sm text-red-700">{errorDescarga}</p>}
 
       <div className="grid gap-2 sm:grid-cols-[1fr_14rem]">
         <Buscador

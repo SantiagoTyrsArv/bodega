@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, select
+from sqlalchemy import ColumnElement, func, select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -16,6 +16,26 @@ router = APIRouter(prefix="/movimientos", tags=["movimientos"])
 Db = Annotated[Session, Depends(get_db)]
 
 
+def filtros_movimientos(
+    *,
+    desde: datetime | None = None,
+    hasta: datetime | None = None,
+    tipo: TipoMovimiento | None = None,
+    producto_id: int | None = None,
+) -> list[ColumnElement[bool]]:
+    """Condiciones para filtrar movimientos. desde es inclusivo y hasta exclusivo."""
+    filtros: list[ColumnElement[bool]] = []
+    if desde is not None:
+        filtros.append(Movimiento.fecha >= desde)
+    if hasta is not None:
+        filtros.append(Movimiento.fecha < hasta)
+    if tipo is not None:
+        filtros.append(Movimiento.tipo == tipo)
+    if producto_id is not None:
+        filtros.append(Movimiento.producto_id == producto_id)
+    return filtros
+
+
 def listar_movimientos(
     db: Session,
     *,
@@ -26,16 +46,8 @@ def listar_movimientos(
     pagina: int = 1,
     por_pagina: int = 50,
 ) -> PaginaMovimientos:
-    """Movimientos del más reciente al más antiguo. desde es inclusivo y hasta exclusivo."""
-    filtros = []
-    if desde is not None:
-        filtros.append(Movimiento.fecha >= desde)
-    if hasta is not None:
-        filtros.append(Movimiento.fecha < hasta)
-    if tipo is not None:
-        filtros.append(Movimiento.tipo == tipo)
-    if producto_id is not None:
-        filtros.append(Movimiento.producto_id == producto_id)
+    """Movimientos del más reciente al más antiguo."""
+    filtros = filtros_movimientos(desde=desde, hasta=hasta, tipo=tipo, producto_id=producto_id)
 
     total = db.scalar(select(func.count()).select_from(Movimiento).where(*filtros)) or 0
     consulta = (

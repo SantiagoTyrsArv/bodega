@@ -46,7 +46,8 @@ function renovarToken(): Promise<boolean> {
   return renovando
 }
 
-export async function peticion<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
+/** Hace la petición con el access token; si expiró, lo renueva una vez y reintenta. */
+async function enviarConSesion(ruta: string, opciones: RequestInit = {}): Promise<Response> {
   const enviar = () => {
     const headers = new Headers(opciones.headers)
     if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`)
@@ -75,6 +76,25 @@ export async function peticion<T>(ruta: string, opciones: RequestInit = {}): Pro
     const datos = await respuesta.json().catch(() => null)
     throw new ErrorApi(respuesta.status, datos?.detail ?? `Error ${respuesta.status}`)
   }
+  return respuesta
+}
+
+export async function peticion<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
+  const respuesta = await enviarConSesion(ruta, opciones)
   if (respuesta.status === 204) return undefined as T
   return respuesta.json()
+}
+
+/** Descarga un archivo de la API (necesita el token, por eso no basta con un enlace). */
+export async function descargar(ruta: string): Promise<void> {
+  const respuesta = await enviarConSesion(ruta)
+  // El nombre viene en Content-Disposition: attachment; filename="..."
+  const nombre = /filename="([^"]+)"/.exec(respuesta.headers.get('Content-Disposition') ?? '')?.[1]
+  const url = URL.createObjectURL(await respuesta.blob())
+  const enlace = document.createElement('a')
+  enlace.href = url
+  enlace.download = nombre ?? 'descarga'
+  enlace.click()
+  // Se libera después de que el navegador empiece la descarga
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }

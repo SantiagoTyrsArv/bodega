@@ -8,6 +8,7 @@ import { alExpirarSesion } from './api/cliente'
 import Layout from './componentes/Layout'
 import './index.css'
 import Ajustes from './paginas/Ajustes'
+import Historial from './paginas/Historial'
 import Inicio from './paginas/Inicio'
 import Login from './paginas/Login'
 import Movimiento from './paginas/Movimiento'
@@ -32,6 +33,7 @@ const router = createBrowserRouter([
       { path: 'productos/nuevo', element: <ProductoNuevo /> },
       { path: 'productos/:id', element: <ProductoDetalle /> },
       { path: 'movimiento/:tipo', element: <Movimiento /> },
+      { path: 'historial', element: <Historial /> },
       { path: 'ajustes', element: <Ajustes /> },
       { path: '*', element: <p className="text-slate-600">Página no encontrada.</p> },
     ],

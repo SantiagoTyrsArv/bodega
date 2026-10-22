@@ -31,3 +31,21 @@ export const estaBajoMinimo = (p: Producto) =>
 
 const fecha = new Intl.DateTimeFormat('es', { dateStyle: 'medium', timeStyle: 'short' })
 export const formatoFecha = (iso: string) => fecha.format(new Date(iso))
+
+/**
+ * Convierte días 'AAAA-MM-DD' (en la hora local) al rango que espera la API:
+ * desde = inicio del primer día; hasta = inicio del día siguiente al último (exclusivo).
+ */
+export function rangoDeDias(desde: string, hasta: string): { desde?: string; hasta?: string } {
+  const rango: { desde?: string; hasta?: string } = {}
+  if (desde) rango.desde = new Date(`${desde}T00:00:00`).toISOString()
+  if (hasta) {
+    const fin = new Date(`${hasta}T00:00:00`)
+    fin.setDate(fin.getDate() + 1)
+    rango.hasta = fin.toISOString()
+  }
+  return rango
+}
+
+/** Minutos respecto a UTC de este navegador (Colombia: -300), para las fechas del Excel. */
+export const desfaseLocal = () => -new Date().getTimezoneOffset()

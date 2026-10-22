@@ -11,6 +11,7 @@ interface Enlace {
 const ENLACES: Enlace[] = [
   { a: '/', texto: 'Inicio', icono: 'M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10' },
   { a: '/productos', texto: 'Productos', icono: 'M3 7l9-4 9 4-9 4-9-4zm0 0v10l9 4 9-4V7M12 11v10' },
+  { a: '/historial', texto: 'Historial', icono: 'M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0' },
   {
     a: '/ajustes',
     texto: 'Ajustes',
