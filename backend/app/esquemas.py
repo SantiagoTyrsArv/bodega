@@ -143,3 +143,13 @@ class PaginaMovimientos(BaseModel):
     total: int
     pagina: int
     por_pagina: int
+
+
+class Resumen(BaseModel):
+    """Datos de la pantalla de Inicio. Solo cuenta productos activos."""
+
+    total_productos: int
+    valor_compra: Decimal  # suma de stock × precio de compra
+    valor_venta: Decimal  # suma de stock × precio de venta
+    bajo_minimo: list[ProductoSalida]
+    ultimos_movimientos: list[MovimientoSalida]

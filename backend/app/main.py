@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.db import SessionLocal
 from app.modelos import Rol, Usuario
-from app.routers import auth, categorias, movimientos, productos
+from app.routers import auth, categorias, movimientos, productos, reportes
 from app.seguridad import hashear_clave
 
 settings = get_settings()
@@ -72,4 +72,5 @@ api.include_router(auth.router)
 api.include_router(categorias.router)
 api.include_router(productos.router)
 api.include_router(movimientos.router)
+api.include_router(reportes.router)
 app.include_router(api)

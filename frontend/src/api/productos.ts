@@ -71,6 +71,8 @@ function useAlGuardar() {
   return (producto: Producto) => {
     queryClient.setQueryData(['producto', producto.id], producto)
     queryClient.invalidateQueries({ queryKey: ['productos'] })
+    // Precios, mínimos y activo cambian el valor del inventario y las alertas
+    queryClient.invalidateQueries({ queryKey: ['resumen'] })
   }
 }
 

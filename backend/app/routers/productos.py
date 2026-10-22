@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import or_, select
+from sqlalchemy import ColumnElement, and_, or_, select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -16,6 +16,11 @@ Db = Annotated[Session, Depends(get_db)]
 
 # Campos que no pueden quedar vacíos al editar
 OBLIGATORIOS = {"codigo", "nombre", "unidad", "precio_compra", "precio_venta", "stock_minimo"}
+
+
+def bajo_minimo_sql() -> ColumnElement[bool]:
+    """Bajo mínimo: tiene un mínimo definido y el stock llegó a él o está por debajo."""
+    return and_(Producto.stock_minimo > 0, Producto.stock <= Producto.stock_minimo)
 
 
 def _obtener(db: Session, producto_id: int) -> Producto:
@@ -56,10 +61,7 @@ def listar(
     if categoria_id is not None:
         consulta = consulta.where(Producto.categoria_id == categoria_id)
     if bajo_minimo:
-        # Bajo mínimo: tiene un mínimo definido y el stock llegó a él o está por debajo
-        consulta = consulta.where(
-            Producto.stock_minimo > 0, Producto.stock <= Producto.stock_minimo
-        )
+        consulta = consulta.where(bajo_minimo_sql())
     return [ProductoSalida.model_validate(p) for p in db.scalars(consulta)]
 
 

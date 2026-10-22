@@ -83,3 +83,12 @@ export interface Pagina<T> {
   pagina: number
   por_pagina: number
 }
+
+/** Datos de la pantalla de Inicio (solo productos activos). */
+export interface Resumen {
+  total_productos: number
+  valor_compra: string
+  valor_venta: string
+  bajo_minimo: Producto[]
+  ultimos_movimientos: Movimiento[]
+}
