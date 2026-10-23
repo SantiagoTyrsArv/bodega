@@ -13,24 +13,25 @@ const decimal = (maxDecimales: number, mensaje: string) =>
     .transform((s) => s.replace(',', '.'))
     .pipe(z.string().regex(new RegExp(`^\\d{1,9}(\\.\\d{1,${maxDecimales}})?$`), mensaje))
 
-const esquema = z.object({
-  codigo: z.string().trim().min(1, 'Escribe o escanea el código'),
-  nombre: z.string().trim().min(1, 'Escribe el nombre'),
-  presentacion: z.string().trim(),
-  categoria_id: z.string(),
-  unidad: z.enum(Object.keys(UNIDADES) as [Unidad, ...Unidad[]]),
-  precio_compra: decimal(2, 'Precio inválido (máximo 2 decimales)'),
-  precio_venta: decimal(2, 'Precio inválido (máximo 2 decimales)'),
-  stock_minimo: decimal(3, 'Cantidad inválida (máximo 3 decimales)'),
-  nota: z.string().trim(),
-})
+// Al crear, el código vacío lo asigna el backend (P001, P002...); al editar no puede quedar vacío
+const esquema = (esNuevo: boolean) =>
+  z.object({
+    codigo: esNuevo ? z.string().trim() : z.string().trim().min(1, 'Escribe el código'),
+    nombre: z.string().trim().min(1, 'Escribe el nombre'),
+    presentacion: z.string().trim(),
+    categoria_id: z.string(),
+    unidad: z.enum(Object.keys(UNIDADES) as [Unidad, ...Unidad[]]),
+    precio_compra: decimal(2, 'Precio inválido (máximo 2 decimales)'),
+    precio_venta: decimal(2, 'Precio inválido (máximo 2 decimales)'),
+    stock_minimo: decimal(3, 'Cantidad inválida (máximo 3 decimales)'),
+    nota: z.string().trim(),
+  })
 
-type Entrada = z.input<typeof esquema>
-type Salida = z.output<typeof esquema>
+type Entrada = z.input<ReturnType<typeof esquema>>
+type Salida = z.output<ReturnType<typeof esquema>>
 
 interface Props {
   producto?: Producto
-  codigoInicial?: string
   textoBoton: string
   pendiente: boolean
   error: Error | null
@@ -48,7 +49,6 @@ export default function FormProducto(props: Props) {
 
 function Formulario({
   producto,
-  codigoInicial = '',
   textoBoton,
   pendiente,
   error,
@@ -61,9 +61,9 @@ function Formulario({
     handleSubmit,
     formState: { errors },
   } = useForm<Entrada, unknown, Salida>({
-    resolver: zodResolver(esquema),
+    resolver: zodResolver(esquema(!producto)),
     defaultValues: {
-      codigo: producto?.codigo ?? codigoInicial,
+      codigo: producto?.codigo ?? '',
       nombre: producto?.nombre ?? '',
       presentacion: producto?.presentacion ?? '',
       categoria_id: producto?.categoria ? String(producto.categoria.id) : '',
@@ -86,14 +86,8 @@ function Formulario({
   return (
     <form onSubmit={handleSubmit(enviar)} noValidate className="space-y-4">
       <label className="block">
-        <span className="etiqueta">Código de barras</span>
-        <input {...register('codigo')} inputMode="numeric" autoComplete="off" className="campo" />
-        {errors.codigo && <span className="error-campo">{errors.codigo.message}</span>}
-      </label>
-
-      <label className="block">
         <span className="etiqueta">Nombre</span>
-        <input {...register('nombre')} autoComplete="off" className="campo" />
+        <input {...register('nombre')} autoComplete="off" autoFocus={!producto} className="campo" />
         {errors.nombre && <span className="error-campo">{errors.nombre.message}</span>}
       </label>
 
@@ -142,6 +136,13 @@ function Formulario({
         <input {...register('stock_minimo')} inputMode="decimal" autoComplete="off" className="campo" />
         <span className="mt-1 block text-xs text-slate-500">Con 0 no se generan alertas de stock bajo.</span>
         {errors.stock_minimo && <span className="error-campo">{errors.stock_minimo.message}</span>}
+      </label>
+
+      <label className="block">
+        <span className="etiqueta">{producto ? 'Código' : 'Código (opcional)'}</span>
+        <input {...register('codigo')} autoComplete="off" className="campo" />
+        {!producto && <span className="mt-1 block text-xs text-slate-500">Si lo dejas vacío se asigna uno solo (P001, P002…).</span>}
+        {errors.codigo && <span className="error-campo">{errors.codigo.message}</span>}
       </label>
 
       <label className="block">

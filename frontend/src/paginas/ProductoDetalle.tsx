@@ -25,6 +25,7 @@ export default function ProductoDetalle() {
   const historial = useMovimientos({ producto_id: id, por_pagina: 50 })
   const [editando, setEditando] = useState(false)
 
+  if (!(id > 0)) return <p className="text-red-700">El producto no existe</p>
   if (isPending) return <p className="text-slate-500">Cargando…</p>
   if (error) return <p className="text-red-700">{error.message}</p>
 

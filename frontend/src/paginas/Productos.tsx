@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
 import { useUsuarioActual } from '../api/auth'
 import { useCategorias } from '../api/categorias'
 import { descargar } from '../api/cliente'
-import { useBuscarCodigo, useProductos } from '../api/productos'
-import Buscador, { AvisoCodigoNuevo } from '../componentes/Buscador'
+import { useProductos } from '../api/productos'
+import Buscador from '../componentes/Buscador'
 import { desfaseLocal, estaBajoMinimo, formatoCantidad, formatoDinero, nombreProducto, UNIDADES_CORTAS } from '../formato'
 
 export default function Productos() {
@@ -18,9 +18,6 @@ export default function Productos() {
   const [verInactivos, setVerInactivos] = useState(false)
   const [descargando, setDescargando] = useState(false)
   const [errorDescarga, setErrorDescarga] = useState('')
-  const navegar = useNavigate()
-  // Un código escaneado (o escrito + Enter) que existe abre su ficha
-  const codigo = useBuscarCodigo((p) => navegar(`/productos/${p.id}`))
 
   // Espera a que se deje de escribir antes de buscar
   useEffect(() => {
@@ -65,15 +62,7 @@ export default function Productos() {
       {errorDescarga && <p className="text-sm text-red-700">{errorDescarga}</p>}
 
       <div className="grid gap-2 sm:grid-cols-[1fr_14rem]">
-        <Buscador
-          valor={texto}
-          onCambiar={setTexto}
-          onCodigo={(c) => {
-            setQ(c)
-            codigo.buscar(c)
-          }}
-          placeholder="Buscar por nombre o código"
-        />
+        <Buscador valor={texto} onCambiar={setTexto} placeholder="Buscar por nombre o código" />
         <select
           value={categoriaId}
           onChange={(e) => setCategoriaId(e.target.value)}
@@ -101,14 +90,10 @@ export default function Productos() {
         </label>
       )}
 
-      {codigo.error && <p className="text-sm text-red-700">{codigo.error}</p>}
-
       {isPending ? (
         <p className="text-slate-500">Cargando…</p>
       ) : error ? (
         <p className="text-red-700">{error.message}</p>
-      ) : productos.length === 0 && codigo.noEncontrado !== '' && codigo.noEncontrado === texto.trim() ? (
-        <AvisoCodigoNuevo codigo={codigo.noEncontrado} />
       ) : productos.length === 0 ? (
         <p className="tarjeta text-center text-slate-500">
           {q || categoriaId ? 'No hay productos que coincidan.' : 'Todavía no hay productos.'}

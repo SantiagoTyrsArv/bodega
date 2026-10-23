@@ -12,7 +12,6 @@ Idioma: la interfaz, los mensajes de error y los nombres del dominio (tablas, ca
 |---|---|
 | Frontend | React 18 + Vite + TypeScript, Tailwind CSS, React Router, TanStack Query, React Hook Form + Zod |
 | PWA | `vite-plugin-pwa` (solo para que se pueda instalar; sin modo sin conexión) |
-| Escáner | `@zxing/browser` (cámara). Lectores USB/Bluetooth funcionan como teclado |
 | Backend | Python 3.12 + FastAPI, SQLAlchemy 2 (estilo tipado), Alembic, Pydantic v2 |
 | Auth | JWT (access 15 min + refresh en cookie httpOnly), contraseñas con Argon2 (`argon2-cffi`) |
 | Excel | `openpyxl` en el backend |
@@ -49,7 +48,7 @@ bodega/
         ├── main.tsx
         ├── api/              # cliente fetch + hooks de TanStack Query
         ├── paginas/          # Inicio, Productos, ProductoDetalle, ProductoNuevo, Movimiento, Historial, Ajustes, Login
-        ├── componentes/      # Escaner, Layout, FormProducto, SelectorProducto, ListaMovimientos, etc.
+        ├── componentes/      # Buscador, Layout, FormProducto, SelectorProducto, ListaMovimientos, etc.
         ├── formato.ts        # números, moneda y fechas con Intl ('es')
         ├── inventario.ts     # motivos por tipo y vista previa del stock resultante
         └── tipos.ts
@@ -74,7 +73,7 @@ Cuatro tablas. Usa `NUMERIC(12,3)` para cantidades y `NUMERIC(12,2)` para precio
 
 **producto**
 - `id` serial PK
-- `codigo` text único (el código de barras)
+- `codigo` text único (código interno; si se deja vacío al crear, se asigna el siguiente `P###`)
 - `nombre` text
 - `presentacion` text nullable (p. ej. "1.5 L", "400 ml")
 - `categoria_id` FK nullable
@@ -112,7 +111,7 @@ Cuatro tablas. Usa `NUMERIC(12,3)` para cantidades y `NUMERIC(12,2)` para precio
 5. En una entrada, `precio_unitario` es el precio de compra (por defecto `producto.precio_compra`). En una salida, es el precio de venta (por defecto `producto.precio_venta`). Una entrada puede actualizar opcionalmente `producto.precio_compra`, solo si quien la registra es ADMIN.
 6. Solo ADMIN crea, edita o desactiva productos, categorías y usuarios, y cambia precios. USUARIO ve todo y registra entradas y salidas.
 7. Los productos no se borran: se desactivan (`activo = false`).
-8. El código de barras es único. Al escanear un código que no existe, el frontend ofrece crear el producto (solo ADMIN).
+8. El código es único. Al crear un producto es opcional: si queda vacío, el backend asigna el siguiente `P###` (P001, P002…). No hay lectura de códigos de barras: los productos se venden por packs y se buscan por nombre.
 9. Los permisos se validan **siempre en el backend**; el frontend solo oculta botones.
 
 ## API
@@ -130,7 +129,7 @@ Prefijo `/api`. JSON. Errores con forma `{"detail": "mensaje en español"}`.
 | GET/POST | `/categorias` | GET todos, POST ADMIN | |
 | PATCH | `/categorias/{id}` | ADMIN | |
 | GET | `/productos?q=&categoria_id=&bajo_minimo=&activo=` | todos | búsqueda por nombre o código |
-| GET | `/productos/codigo/{codigo}` | todos | resolver un código escaneado; 404 si no existe |
+| GET | `/productos/codigo/{codigo}` | todos | buscar un producto por su código exacto; 404 si no existe |
 | GET | `/productos/{id}` | todos | |
 | POST | `/productos` | ADMIN | |
 | PATCH | `/productos/{id}` | ADMIN | no permite cambiar `stock` |
@@ -147,22 +146,14 @@ Los precios y valores se muestran a USUARIO (solo lectura).
 ## Pantallas
 
 - **Login.**
-- **Inicio:** botón grande "Escanear", tarjetas con total de productos, valor del inventario (compra y venta) y cantidad bajo mínimo; lista de productos bajo mínimo; últimos movimientos; botones "Entrada" y "Salida".
-- **Productos:** buscador (acepta escribir o escanear), filtro por categoría, lista con nombre, código, stock, unidad y precio de venta. Marca en rojo los que están bajo mínimo.
+- **Inicio:** botones grandes "Entrada" y "Salida", tarjetas con total de productos, valor del inventario (compra y venta) y cantidad bajo mínimo; lista de productos bajo mínimo; últimos movimientos.
+- **Productos:** buscador por nombre o código, filtro por categoría, lista con nombre, código, stock, unidad y precio de venta. Marca en rojo los que están bajo mínimo.
 - **Ficha de producto:** datos, precios, stock, botones Entrada/Salida, historial. ADMIN puede editar.
-- **Entrada / Salida:** producto (escaneado o buscado), cantidad, precio (prellenado), motivo, comentario. Muestra el stock resultante antes de confirmar.
+- **Entrada / Salida:** producto (buscado por nombre o código), cantidad, precio (prellenado), motivo, comentario. Muestra el stock resultante antes de confirmar.
 - **Historial:** todos los movimientos con filtros y botón "Descargar Excel". ADMIN ve "Anular".
 - **Ajustes (ADMIN):** usuarios y categorías.
 
 Diseño **mobile-first**: botones de al menos 44 px, formularios de una columna, navegación inferior en celular y lateral en pantallas anchas. Formato de números y moneda con `Intl.NumberFormat('es')`.
-
-## Escáner
-
-- Componente `componentes/Escaner.tsx` con `BrowserMultiFormatReader` de `@zxing/browser`, cámara trasera, formatos EAN-13, EAN-8, UPC-A, UPC-E y Code-128.
-- Al leer un código: vibración corta si está disponible, se detiene la cámara y se llama a `GET /productos/codigo/{codigo}`.
-- Siempre debe existir la alternativa de escribir el código a mano.
-- Los lectores USB/Bluetooth escriben el código y un Enter en el buscador: tratar Enter en el campo de código como un escaneo.
-- La cámara requiere HTTPS (en local, `localhost` sirve).
 
 ## Configuración
 
@@ -226,7 +217,7 @@ En `backend/tests/`, contra una base PostgreSQL de prueba:
 3. Auth (login, refresh, logout, roles) y pantalla de login.
 4. Categorías y productos (backend + pantallas).
 5. Servicio de inventario, movimientos y anulación, con sus pruebas.
-6. Escáner integrado en Inicio, Productos y Entrada/Salida.
+6. ~~Escáner~~ (retirado: los productos se venden por packs y se buscan por nombre).
 7. Resumen e Inicio con alertas de stock bajo y valor del inventario.
 8. Historial y exportación a Excel.
 9. PWA instalable, ajustes de usuarios.
@@ -234,7 +225,7 @@ En `backend/tests/`, contra una base PostgreSQL de prueba:
 
 ## Fuera de alcance (no implementar sin que se pida)
 
-Varias bodegas, ubicaciones, lotes, vencimientos, proveedores, órdenes de compra, facturación, fotos, modo sin conexión, notificaciones, conteo físico, historial de precios.
+Varias bodegas, ubicaciones, lotes, vencimientos, escáner de códigos de barras, proveedores, órdenes de compra, facturación, fotos, modo sin conexión, notificaciones, conteo físico, historial de precios.
 
 Para crecer más adelante: varias bodegas = tabla `bodega` + `bodega_id` en `movimiento` y stock por bodega. Diseña el servicio de inventario de forma que ese cambio sea local a él.
 

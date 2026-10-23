@@ -1,7 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
 import type { Producto, ProductoDatos } from '../tipos'
-import { ErrorApi, peticion } from './cliente'
+import { peticion } from './cliente'
 
 export interface FiltrosProductos {
   q?: string
@@ -29,41 +28,6 @@ export function useProducto(id: number) {
     queryFn: () => peticion<Producto>(`/productos/${id}`),
     enabled: id > 0,
   })
-}
-
-/** Busca el producto de un código escaneado o escrito. Si no existe, falla con estado 404. */
-export function useResolverCodigo() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (codigo: string) => peticion<Producto>(`/productos/codigo/${encodeURIComponent(codigo)}`),
-    onSuccess: (producto) => queryClient.setQueryData(['producto', producto.id], producto),
-  })
-}
-
-/**
- * Resuelve un código leído. Si existe llama a onEncontrado; si no, deja el código en noEncontrado.
- * error trae cualquier otro problema (sin conexión, etc.).
- */
-export function useBuscarCodigo(onEncontrado: (p: Producto) => void) {
-  const resolver = useResolverCodigo()
-  const [noEncontrado, setNoEncontrado] = useState('')
-
-  const buscar = (codigo: string) => {
-    setNoEncontrado('')
-    resolver.mutate(codigo, {
-      onSuccess: onEncontrado,
-      onError: (e) => {
-        if (e instanceof ErrorApi && e.estado === 404) setNoEncontrado(codigo)
-      },
-    })
-  }
-  const esNoEncontrado = resolver.error instanceof ErrorApi && resolver.error.estado === 404
-  return {
-    buscar,
-    noEncontrado,
-    pendiente: resolver.isPending,
-    error: resolver.error && !esNoEncontrado ? resolver.error.message : '',
-  }
 }
 
 function useAlGuardar() {

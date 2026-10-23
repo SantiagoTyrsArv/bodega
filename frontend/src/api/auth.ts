@@ -20,7 +20,8 @@ export function useUsuarioActual() {
       }
     },
     staleTime: Infinity,
-    retry: false,
+    // El 401 ya se convierte en null; los demás errores (sin conexión, API arrancando) se reintentan
+    retry: 2,
   })
 }
 

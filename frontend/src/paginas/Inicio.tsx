@@ -1,10 +1,6 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
 import { useUsuarioActual } from '../api/auth'
-import { useBuscarCodigo } from '../api/productos'
 import { useResumen } from '../api/resumen'
-import { AvisoCodigoNuevo, IconoCamara } from '../componentes/Buscador'
-import Escaner from '../componentes/Escaner'
 import ListaMovimientos from '../componentes/ListaMovimientos'
 import { formatoCantidad, formatoDinero, nombreProducto, UNIDADES_CORTAS } from '../formato'
 
@@ -19,36 +15,20 @@ function Tarjeta({ titulo, valor, alerta = false }: { titulo: string; valor: str
 
 export default function Inicio() {
   const { data: usuario } = useUsuarioActual()
-  const navegar = useNavigate()
-  const [escaneando, setEscaneando] = useState(false)
-  const codigo = useBuscarCodigo((p) => navegar(`/productos/${p.id}`))
   const { data: resumen, error } = useResumen()
 
   return (
     <section className="space-y-4">
       <h1 className="text-2xl font-bold text-slate-800">Hola, {usuario?.nombre}</h1>
 
-      <div className="grid gap-2 sm:grid-cols-[2fr_1fr_1fr]">
-        <button
-          onClick={() => setEscaneando(true)}
-          disabled={codigo.pendiente}
-          className="boton-primario min-h-20 text-xl"
-        >
-          <IconoCamara className="size-8" />
-          {codigo.pendiente ? 'Buscando…' : 'Escanear'}
-        </button>
-        <div className="grid grid-cols-2 gap-2 sm:contents">
-          <Link to="/movimiento/entrada" className="boton min-h-14 bg-white text-emerald-800 ring-1 ring-emerald-200 hover:bg-emerald-50 sm:min-h-20">
-            + Entrada
-          </Link>
-          <Link to="/movimiento/salida" className="boton min-h-14 bg-white text-amber-800 ring-1 ring-amber-200 hover:bg-amber-50 sm:min-h-20">
-            − Salida
-          </Link>
-        </div>
+      <div className="grid grid-cols-2 gap-2">
+        <Link to="/movimiento/entrada" className="boton min-h-20 bg-emerald-700 text-xl text-white hover:bg-emerald-800">
+          + Entrada
+        </Link>
+        <Link to="/movimiento/salida" className="boton min-h-20 bg-amber-600 text-xl text-white hover:bg-amber-700">
+          − Salida
+        </Link>
       </div>
-
-      {codigo.noEncontrado && <AvisoCodigoNuevo codigo={codigo.noEncontrado} />}
-      {codigo.error && <p className="text-sm text-red-700">{codigo.error}</p>}
 
       {error ? (
         <p className="text-red-700">{error.message}</p>
@@ -94,16 +74,6 @@ export default function Inicio() {
             <ListaMovimientos movimientos={resumen.ultimos_movimientos} mostrarProducto />
           </div>
         </>
-      )}
-
-      {escaneando && (
-        <Escaner
-          onCerrar={() => setEscaneando(false)}
-          onLeer={(c) => {
-            setEscaneando(false)
-            codigo.buscar(c)
-          }}
-        />
       )}
     </section>
   )

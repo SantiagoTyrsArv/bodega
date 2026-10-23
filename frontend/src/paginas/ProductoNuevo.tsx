@@ -1,4 +1,4 @@
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
+import { Link, Navigate, useNavigate } from 'react-router'
 import { useUsuarioActual } from '../api/auth'
 import { useCrearProducto } from '../api/productos'
 import FormProducto from '../componentes/FormProducto'
@@ -7,8 +7,6 @@ export default function ProductoNuevo() {
   const { data: usuario } = useUsuarioActual()
   const crear = useCrearProducto()
   const navegar = useNavigate()
-  // Al escanear un código inexistente se llega aquí con ?codigo=...
-  const [params] = useSearchParams()
 
   if (usuario?.rol !== 'ADMIN') return <Navigate to="/productos" replace />
 
@@ -20,7 +18,6 @@ export default function ProductoNuevo() {
       <h1 className="text-2xl font-bold text-slate-800">Nuevo producto</h1>
       <div className="tarjeta">
         <FormProducto
-          codigoInicial={params.get('codigo') ?? ''}
           textoBoton="Crear producto"
           pendiente={crear.isPending}
           error={crear.error}

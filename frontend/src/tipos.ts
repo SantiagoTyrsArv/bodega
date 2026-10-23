@@ -43,7 +43,7 @@ export interface Producto {
 
 /** Datos que se envían al crear o editar un producto (sin stock). */
 export interface ProductoDatos {
-  codigo: string
+  codigo: string // al crear, vacío = el backend asigna P001, P002...
   nombre: string
   presentacion: string | null
   categoria_id: number | null

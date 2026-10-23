@@ -1,7 +1,8 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import ColumnElement, and_, or_, select
+from sqlalchemy import ColumnElement, Integer, and_, func, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -92,13 +93,32 @@ def historial(
     return listar_movimientos(db, producto_id=producto_id, pagina=pagina, por_pagina=por_pagina)
 
 
+def _siguiente_codigo(db: Session) -> str:
+    """Siguiente código P### después del mayor existente (mismo formato del Excel importado)."""
+    numero = func.substring(Producto.codigo, 2).cast(Integer)
+    # Hasta 9 dígitos para que el número quepa en un integer
+    patron = Producto.codigo.regexp_match(r"^P\d{1,9}$")
+    mayor = db.scalar(select(func.max(numero)).where(patron))
+    return f"P{(mayor or 0) + 1:03d}"
+
+
 @router.post("", status_code=status.HTTP_201_CREATED)
 def crear(datos: ProductoCrear, _: AdminActual, db: Db) -> ProductoSalida:
-    _validar_codigo_libre(db, datos.codigo)
+    if datos.codigo:
+        _validar_codigo_libre(db, datos.codigo)
+    else:
+        datos.codigo = _siguiente_codigo(db)
     _validar_categoria(db, datos.categoria_id)
     producto = Producto(**datos.model_dump())
     db.add(producto)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # Dos productos creados a la vez con el mismo código
+        db.rollback()
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, "Otro producto tomó ese código. Intenta de nuevo"
+        ) from None
     db.refresh(producto)
     return ProductoSalida.model_validate(producto)
 

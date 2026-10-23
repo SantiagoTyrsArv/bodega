@@ -90,6 +90,22 @@ def test_codigo_duplicado(cliente, admin):
     assert r.json() == {"detail": "Ya existe un producto con el código 7701234567890"}
 
 
+def test_codigo_vacio_se_genera_solo(cliente, admin):
+    # Sigue al mayor código P### existente; los códigos de otro formato no cuentan
+    crear_producto(cliente, admin, codigo="P009")
+    crear_producto(cliente, admin, codigo="7701234567890")
+    assert crear_producto(cliente, admin, codigo=None)["codigo"] == "P010"
+    sin_campo = {k: v for k, v in PRODUCTO.items() if k != "codigo"}
+    r = cliente.post("/api/productos", json=sin_campo, headers=admin)
+    assert r.status_code == 201
+    assert r.json()["codigo"] == "P011"
+    assert crear_producto(cliente, admin, codigo="  ")["codigo"] == "P012"
+
+
+def test_primer_codigo_generado(cliente, admin):
+    assert crear_producto(cliente, admin, codigo="")["codigo"] == "P001"
+
+
 def test_validaciones_de_producto(cliente, admin):
     casos = [
         {"precio_compra": "-1"},

@@ -74,7 +74,8 @@ class ProductoCrear(BaseModel):
     # forbid: el stock no se puede enviar; solo cambia con movimientos
     model_config = ConfigDict(extra="forbid")
 
-    codigo: Texto
+    # Vacío o ausente: se genera el siguiente P### (P001, P002...)
+    codigo: Annotated[str, StringConstraints(strip_whitespace=True)] | None = None
     nombre: Texto
     presentacion: str | None = None
     categoria_id: int | None = None

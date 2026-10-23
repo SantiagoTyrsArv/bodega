@@ -30,7 +30,7 @@ function Icono({ d }: { d: string }) {
 
 /** Estructura de las páginas con sesión. Sin sesión, redirige al login. */
 export default function Layout() {
-  const { data: usuario, isPending, error } = useUsuarioActual()
+  const { data: usuario, isPending, error, refetch, isFetching } = useUsuarioActual()
   const logout = useLogout()
   const ubicacion = useLocation()
 
@@ -38,7 +38,14 @@ export default function Layout() {
     return <p className="p-6 text-center text-slate-500">Cargando…</p>
   }
   if (error) {
-    return <p className="p-6 text-center text-red-700">{error.message}</p>
+    return (
+      <div className="space-y-3 p-6 text-center">
+        <p className="text-red-700">{error.message}</p>
+        <button onClick={() => refetch()} disabled={isFetching} className="boton-secundario">
+          {isFetching ? 'Reintentando…' : 'Reintentar'}
+        </button>
+      </div>
+    )
   }
   if (!usuario) {
     return <Navigate to="/login" replace state={{ desde: ubicacion.pathname }} />

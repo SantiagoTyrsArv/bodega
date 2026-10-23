@@ -1,44 +1,31 @@
 import { useEffect, useState } from 'react'
-import { useBuscarCodigo, useProductos } from '../api/productos'
+import { useProductos } from '../api/productos'
 import { formatoCantidad, nombreProducto, UNIDADES_CORTAS } from '../formato'
 import type { Producto } from '../tipos'
-import Buscador, { AvisoCodigoNuevo } from './Buscador'
+import Buscador from './Buscador'
 
-/** Buscador para elegir un producto activo por nombre o código, escribiendo o escaneando. */
+/** Buscador para elegir un producto activo por nombre o código. */
 export default function SelectorProducto({ onElegir }: { onElegir: (p: Producto) => void }) {
   const [texto, setTexto] = useState('')
   const [q, setQ] = useState('')
-  const codigo = useBuscarCodigo(onElegir)
 
   useEffect(() => {
     const t = setTimeout(() => setQ(texto.trim()), 300)
     return () => clearTimeout(t)
   }, [texto])
 
-  const { data: productos, isFetching } = useProductos({ q: q || undefined })
+  const { data: productos, isFetching, error } = useProductos({ q: q || undefined })
   const resultados = (productos ?? []).slice(0, 20)
-  // El aviso solo se muestra mientras el campo tenga el código que no se encontró
-  const mostrarAviso = codigo.noEncontrado !== '' && codigo.noEncontrado === texto.trim()
 
   return (
     <div className="space-y-2">
-      <Buscador
-        valor={texto}
-        onCambiar={setTexto}
-        onCodigo={(c) => {
-          setQ(c)
-          codigo.buscar(c)
-        }}
-        placeholder="Buscar producto por nombre o código"
-        autoFocus
-      />
-      {codigo.error && <p className="px-1 text-sm text-red-700">{codigo.error}</p>}
-      {mostrarAviso && resultados.length === 0 ? (
-        <AvisoCodigoNuevo codigo={codigo.noEncontrado} />
+      <Buscador valor={texto} onCambiar={setTexto} placeholder="Buscar producto por nombre o código" autoFocus />
+      {error ? (
+        <p className="px-1 text-sm text-red-700">{error.message}</p>
       ) : productos && resultados.length === 0 ? (
         <p className="px-1 text-sm text-slate-500">No hay productos que coincidan.</p>
       ) : (
-        <ul className={`divide-y divide-slate-100 rounded-lg border border-slate-200 ${isFetching || codigo.pendiente ? 'opacity-70' : ''}`}>
+        <ul className={`divide-y divide-slate-100 rounded-lg border border-slate-200 ${isFetching ? 'opacity-70' : ''}`}>
           {resultados.map((p) => (
             <li key={p.id}>
               <button

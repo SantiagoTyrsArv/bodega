@@ -9,7 +9,8 @@ const CLAVE_MINIMA = 8
 const esquema = (esNuevo: boolean) =>
   z.object({
     nombre: z.string().trim().min(1, 'Escribe el nombre'),
-    correo: z.string().trim().toLowerCase().pipe(z.email('Escribe un correo válido')),
+    // Mismo criterio que el backend (y que el login)
+    correo: z.string().trim().toLowerCase().regex(/^[^@\s]+@[^@\s]+$/, 'Escribe un correo válido'),
     // Al editar, la clave vacía significa "no cambiarla"
     clave: esNuevo
       ? z.string().min(CLAVE_MINIMA, `Mínimo ${CLAVE_MINIMA} caracteres`)

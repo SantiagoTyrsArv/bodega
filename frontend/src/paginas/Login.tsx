@@ -5,7 +5,8 @@ import { z } from 'zod'
 import { useLogin, useUsuarioActual } from '../api/auth'
 
 const esquema = z.object({
-  correo: z.email('Escribe un correo válido'),
+  // Mismo criterio que el backend: un correo que la API acepta debe poder ingresar
+  correo: z.string().trim().regex(/^[^@\s]+@[^@\s]+$/, 'Escribe un correo válido'),
   clave: z.string().min(1, 'Escribe tu clave'),
 })
 
